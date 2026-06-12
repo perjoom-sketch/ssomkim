@@ -1,4 +1,5 @@
 {
+  "version": 1,
   "reactions": [
     {
       "id": "tap_calm_default",
@@ -347,10 +348,6 @@
       },
       "weight": 1,
       "anim": [],
-      "sound": {
-        "fn": "grumble",
-        "pitch": 1.0
-      },
       "line": {
         "pool": [
           "어쩔래."
