@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title></title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<div id="stage">
+  <div id="speech"></div>
+  <svg id="character" viewBox="0 0 300 300">
+    <defs>
+      <radialGradient id="fur" cx="42%" cy="32%" r="75%">
+        <stop offset="0%" stop-color="#fdf6e9"/>
+        <stop offset="70%" stop-color="#f5e6cd"/>
+        <stop offset="100%" stop-color="#e9d4b2"/>
+      </radialGradient>
+      <radialGradient id="furBack" cx="50%" cy="35%" r="75%">
+        <stop offset="0%" stop-color="#f8eeda"/>
+        <stop offset="100%" stop-color="#e6d0ae"/>
+      </radialGradient>
+      <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="1.2"/>
+      </filter>
+    </defs>
+
+    <!-- 그림자 -->
+    <ellipse cx="150" cy="276" rx="86" ry="12" fill="rgba(120,90,50,.18)"/>
+
+    <!-- ===== 정면 ===== -->
+    <g id="front">
+      <!-- 몸 (계란형 + 처진 뱃살 라인) -->
+      <path id="body" d="M150 26
+        C 92 26, 56 78, 52 150
+        C 49 208, 70 262, 116 270
+        C 132 274, 138 258, 150 258
+        C 162 258, 168 274, 184 270
+        C 230 262, 251 208, 248 150
+        C 244 78, 208 26, 150 26 Z" fill="url(#fur)"/>
+      <!-- 뱃살 음영 -->
+      <ellipse id="belly" cx="150" cy="232" rx="58" ry="26" fill="#e9d4b2" opacity=".45" filter="url(#soft)"/>
+
+      <!-- 팔 (점 같은 뭉툭) -->
+      <ellipse id="armL" cx="78"  cy="196" rx="20" ry="26" fill="url(#fur)"/>
+      <ellipse id="armR" cx="222" cy="196" rx="20" ry="26" fill="url(#fur)"/>
+      <!-- 발 -->
+      <ellipse id="footL" cx="112" cy="264" rx="20" ry="13" fill="#f2e2c6"/>
+      <ellipse id="footR" cx="188" cy="264" rx="20" ry="13" fill="#f2e2c6"/>
+
+      <!-- 볼터치 -->
+      <ellipse id="blushL" cx="92"  cy="158" r="0" rx="22" ry="15" fill="#f3a8a0" opacity=".65" filter="url(#soft)"/>
+      <ellipse id="blushR" cx="208" cy="158" rx="22" ry="15" fill="#f3a8a0" opacity=".65" filter="url(#soft)"/>
+
+      <!-- 눈썹 -->
+      <path id="browL" d="M86 110 Q102 102 118 110" stroke="#6b5638" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <path id="browR" d="M182 110 Q198 102 214 110" stroke="#6b5638" stroke-width="5" stroke-linecap="round" fill="none"/>
+
+      <!-- 눈 -->
+      <g id="eyeLg">
+        <ellipse id="eyeWL" cx="104" cy="134" rx="20" ry="17" fill="#fff"/>
+        <circle  id="eyeL"  cx="108" cy="136" r="12" fill="#3a2c1c"/>
+        <circle cx="112" cy="131" r="4" fill="#fff"/>
+        <ellipse id="lidL" cx="104" cy="123" rx="22" ry="8" fill="url(#fur)"/>
+        <ellipse id="tearL" cx="92" cy="148" rx="0" ry="0" fill="#bfe6f7" opacity=".9"/>
+      </g>
+      <g id="eyeRg">
+        <ellipse id="eyeWR" cx="196" cy="134" rx="20" ry="17" fill="#fff"/>
+        <circle  id="eyeR"  cx="192" cy="136" r="12" fill="#3a2c1c"/>
+        <circle cx="196" cy="131" r="4" fill="#fff"/>
+        <ellipse id="lidR" cx="196" cy="123" rx="22" ry="8" fill="url(#fur)"/>
+        <ellipse id="tearR" cx="208" cy="148" rx="0" ry="0" fill="#bfe6f7" opacity=".9"/>
+      </g>
+
+      <!-- 입 (씨익) -->
+      <path id="mouth" d="M136 172 Q150 182 164 172" stroke="#8a6a4a" stroke-width="5" stroke-linecap="round" fill="none"/>
+
+      <!-- 분노 김 -->
+      <g id="steam" opacity="0">
+        <path d="M62 52 q-8 -10 0 -20 q8 -10 0 -18" stroke="#c9b59a" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M238 52 q8 -10 0 -20 q-8 -10 0 -18" stroke="#c9b59a" stroke-width="5" fill="none" stroke-linecap="round"/>
+      </g>
+    </g>
+
+    <!-- ===== 등 (삐짐) ===== -->
+    <g id="back" opacity="0">
+      <path d="M150 26
+        C 92 26, 56 78, 52 150
+        C 49 208, 70 262, 116 270
+        C 132 274, 138 258, 150 258
+        C 162 258, 168 274, 184 270
+        C 230 262, 251 208, 248 150
+        C 244 78, 208 26, 150 26 Z" fill="url(#furBack)"/>
+      <path d="M150 150 C 146 196, 146 226, 150 252" stroke="#dcc49e" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
+      <ellipse cx="112" cy="264" rx="20" ry="13" fill="#f2e2c6"/>
+      <ellipse cx="188" cy="264" rx="20" ry="13" fill="#f2e2c6"/>
+    </g>
+
+    <!-- 반창고 (시그니처, 모든 상태 공통: 마지막에 그려 최상위) -->
+    <g id="bandaid" transform="rotate(-22 105 62)">
+      <rect x="62" y="50" width="86" height="26" rx="12" fill="#e8c9a0" stroke="#d4b288" stroke-width="1.5"/>
+      <rect x="90" y="54" width="30" height="18" rx="4" fill="#f0d9b8"/>
+      <g fill="#c9a87e">
+        <circle cx="72" cy="58" r="1.6"/><circle cx="79" cy="63" r="1.6"/><circle cx="72" cy="68" r="1.6"/>
+        <circle cx="138" cy="58" r="1.6"/><circle cx="131" cy="63" r="1.6"/><circle cx="138" cy="68" r="1.6"/>
+      </g>
+    </g>
+
+    <!-- 하트 (화해/애교) -->
+    <g id="hearts" opacity="0" fill="#f08a8a">
+      <path d="M58 90 c-5-8-18-4-16 5 c1 6 10 11 16 15 c6-4 15-9 16-15 c2-9-11-13-16-5z"/>
+      <path d="M242 78 c-4-7-15-3-13 4 c1 5 8 9 13 12 c5-3 12-7 13-12 c2-7-9-11-13-4z"/>
+    </g>
+  </svg>
+</div>
+<div id="hint">탭: 찌르기 / 길게: 꼬집기 / 문지르기: 간지럼 / 휙: 밀기 👆</div>
+
+<script src="js/config.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/character.js"></script>
+<script src="js/statemachine.js"></script>
+<script src="js/reactions.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

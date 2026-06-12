@@ -1,0 +1,33 @@
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; overflow:hidden; touch-action:manipulation; }
+  body {
+    background: radial-gradient(ellipse at 50% 35%, #f7ead8 0%, #efdcc2 70%, #e8d2b4 100%);
+    font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    user-select:none; -webkit-user-select:none;
+  }
+  #stage { position:relative; width:min(88vw, 400px); touch-action:none; }
+  #character { width:100%; cursor:pointer; transform-origin:50% 90%; touch-action:none; }
+  #character.squash { animation: squash .45s; }
+  #character.shake  { animation: shake .4s; }
+  #character.jump   { animation: jump .55s; }
+  #character.wobble { animation: wobble 1.5s; }
+  #character.tremble { animation: tremble .12s infinite; }
+  @keyframes tremble { 0%,100%{transform:translateX(0) rotate(0)} 50%{transform:translateX(3px) rotate(.6deg)} }
+  @keyframes squash { 0%{transform:scale(1,1)} 35%{transform:scale(1.25,.72)} 70%{transform:scale(.92,1.1)} 100%{transform:scale(1,1)} }
+  @keyframes shake  { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-4deg)} 75%{transform:rotate(4deg)} }
+  @keyframes jump   { 0%,100%{transform:translateY(0) scale(1,1)} 30%{transform:translateY(-30px) scale(.94,1.1)} 65%{transform:translateY(0) scale(1.15,.85)} }
+  @keyframes wobble { 0%,100%{transform:rotate(0)} 20%{transform:rotate(-6deg)} 40%{transform:rotate(5deg)} 60%{transform:rotate(-3deg)} 80%{transform:rotate(2deg)} }
+  #speech {
+    position:absolute; top:-14px; left:50%; transform:translateX(-50%);
+    background:#fffdf8; border:3px solid #4a3a2a; border-radius:18px;
+    padding:8px 16px; font-size:19px; font-weight:800; color:#4a3a2a;
+    opacity:0; transition:opacity .15s; white-space:nowrap; pointer-events:none; z-index:5;
+  }
+  #speech::after {
+    content:''; position:absolute; bottom:-12px; left:50%; transform:translateX(-50%);
+    border:8px solid transparent; border-top:10px solid #4a3a2a;
+  }
+  #hint { margin-top:16px; color:#8a7558; font-size:14px; font-weight:600; opacity:.85; }
+  .fluff { position:absolute; pointer-events:none; font-size:16px; will-change:transform,opacity; z-index:4; }
