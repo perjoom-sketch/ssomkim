@@ -78,6 +78,7 @@
     (reaction.anim || []).forEach(anim => playAnim(anim, context));
     if(reaction.face && C[reaction.face]) C[reaction.face]();
     if(reaction.sound && A[reaction.sound.fn]) A[reaction.sound.fn](reaction.sound.pitch);
+    (reaction.sounds || []).forEach(sound => { if(A[sound.fn]) A[sound.fn](sound.pitch); });
     if(reaction.line && reaction.line.pool && reaction.line.pool.length){
       C.say(reaction.line.pool[Math.floor(Math.random()*reaction.line.pool.length)], reaction.line.show_ms || 750);
     }
