@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>쏨킴</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; overflow:hidden; touch-action:manipulation; }
+  body {
+    background: radial-gradient(ellipse at 50% 35%, #f7ead8 0%, #efdcc2 70%, #e8d2b4 100%);
+    font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    user-select:none; -webkit-user-select:none;
+  }
+  #stage { position:relative; width:min(88vw, 400px); touch-action:none; }
+  #ssomkim { width:100%; cursor:pointer; transform-origin:50% 90%; touch-action:none; }
+  #ssomkim.squash { animation: squash .45s; }
+  #ssomkim.shake  { animation: shake .4s; }
+  #ssomkim.jump   { animation: jump .55s; }
+  #ssomkim.wobble { animation: wobble 1.5s; }
+  #ssomkim.tremble { animation: tremble .12s infinite; }
+  @keyframes tremble { 0%,100%{transform:translateX(0) rotate(0)} 50%{transform:translateX(3px) rotate(.6deg)} }
+  @keyframes squash { 0%{transform:scale(1,1)} 35%{transform:scale(1.25,.72)} 70%{transform:scale(.92,1.1)} 100%{transform:scale(1,1)} }
+  @keyframes shake  { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-4deg)} 75%{transform:rotate(4deg)} }
+  @keyframes jump   { 0%,100%{transform:translateY(0) scale(1,1)} 30%{transform:translateY(-30px) scale(.94,1.1)} 65%{transform:translateY(0) scale(1.15,.85)} }
+  @keyframes wobble { 0%,100%{transform:rotate(0)} 20%{transform:rotate(-6deg)} 40%{transform:rotate(5deg)} 60%{transform:rotate(-3deg)} 80%{transform:rotate(2deg)} }
+  #speech {
+    position:absolute; top:-14px; left:50%; transform:translateX(-50%);
+    background:#fffdf8; border:3px solid #4a3a2a; border-radius:18px;
+    padding:8px 16px; font-size:19px; font-weight:800; color:#4a3a2a;
+    opacity:0; transition:opacity .15s; white-space:nowrap; pointer-events:none; z-index:5;
+  }
+  #speech::after {
+    content:''; position:absolute; bottom:-12px; left:50%; transform:translateX(-50%);
+    border:8px solid transparent; border-top:10px solid #4a3a2a;
+  }
+  #hint { margin-top:16px; color:#8a7558; font-size:14px; font-weight:600; opacity:.85; }
+  .fluff { position:absolute; pointer-events:none; font-size:16px; will-change:transform,opacity; z-index:4; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="speech"></div>
+  <svg id="ssomkim" viewBox="0 0 300 300">
+    <defs>
+      <radialGradient id="fur" cx="42%" cy="32%" r="75%">
+        <stop offset="0%" stop-color="#fdf6e9"/>
+        <stop offset="70%" stop-color="#f5e6cd"/>
+        <stop offset="100%" stop-color="#e9d4b2"/>
+      </radialGradient>
+      <radialGradient id="furBack" cx="50%" cy="35%" r="75%">
+        <stop offset="0%" stop-color="#f8eeda"/>
+        <stop offset="100%" stop-color="#e6d0ae"/>
+      </radialGradient>
+      <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="1.2"/>
+      </filter>
+    </defs>
+
+    <!-- 그림자 -->
+    <ellipse cx="150" cy="276" rx="86" ry="12" fill="rgba(120,90,50,.18)"/>
+
+    <!-- ===== 정면 ===== -->
+    <g id="front">
+      <!-- 몸 (계란형 + 처진 뱃살 라인) -->
+      <path id="body" d="M150 26
+        C 92 26, 56 78, 52 150
+        C 49 208, 70 262, 116 270
+        C 132 274, 138 258, 150 258
+        C 162 258, 168 274, 184 270
+        C 230 262, 251 208, 248 150
+        C 244 78, 208 26, 150 26 Z" fill="url(#fur)"/>
+      <!-- 뱃살 음영 -->
+      <ellipse id="bellyShade" cx="150" cy="232" rx="58" ry="26" fill="#e9d4b2" opacity=".45" filter="url(#soft)"/>
+
+      <!-- 팔 (점 같은 뭉툭) -->
+      <ellipse id="armL" cx="78"  cy="196" rx="20" ry="26" fill="url(#fur)"/>
+      <ellipse id="armR" cx="222" cy="196" rx="20" ry="26" fill="url(#fur)"/>
+      <!-- 발 -->
+      <ellipse id="footL" cx="112" cy="264" rx="20" ry="13" fill="#f2e2c6"/>
+      <ellipse id="footR" cx="188" cy="264" rx="20" ry="13" fill="#f2e2c6"/>
+
+      <!-- 볼터치 -->
+      <ellipse id="blushL" cx="92"  cy="158" r="0" rx="22" ry="15" fill="#f3a8a0" opacity=".65" filter="url(#soft)"/>
+      <ellipse id="blushR" cx="208" cy="158" rx="22" ry="15" fill="#f3a8a0" opacity=".65" filter="url(#soft)"/>
+
+      <!-- 눈썹 -->
+      <path id="browL" d="M86 110 Q102 102 118 110" stroke="#6b5638" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <path id="browR" d="M182 110 Q198 102 214 110" stroke="#6b5638" stroke-width="5" stroke-linecap="round" fill="none"/>
+
+      <!-- 눈 -->
+      <g id="eyeLg">
+        <ellipse id="eyeWL" cx="104" cy="134" rx="20" ry="17" fill="#fff"/>
+        <circle  id="eyeL"  cx="108" cy="136" r="12" fill="#3a2c1c"/>
+        <circle cx="112" cy="131" r="4" fill="#fff"/>
+        <ellipse id="lidL" cx="104" cy="123" rx="22" ry="8" fill="url(#fur)"/>
+        <ellipse id="tearL" cx="92" cy="148" rx="0" ry="0" fill="#bfe6f7" opacity=".9"/>
+      </g>
+      <g id="eyeRg">
+        <ellipse id="eyeWR" cx="196" cy="134" rx="20" ry="17" fill="#fff"/>
+        <circle  id="eyeR"  cx="192" cy="136" r="12" fill="#3a2c1c"/>
+        <circle cx="196" cy="131" r="4" fill="#fff"/>
+        <ellipse id="lidR" cx="196" cy="123" rx="22" ry="8" fill="url(#fur)"/>
+        <ellipse id="tearR" cx="208" cy="148" rx="0" ry="0" fill="#bfe6f7" opacity=".9"/>
+      </g>
+
+      <!-- 입 (씨익) -->
+      <path id="mouth" d="M136 172 Q150 182 164 172" stroke="#8a6a4a" stroke-width="5" stroke-linecap="round" fill="none"/>
+
+      <!-- 분노 김 -->
+      <g id="steam" opacity="0">
+        <path d="M62 52 q-8 -10 0 -20 q8 -10 0 -18" stroke="#c9b59a" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M238 52 q8 -10 0 -20 q-8 -10 0 -18" stroke="#c9b59a" stroke-width="5" fill="none" stroke-linecap="round"/>
+      </g>
+    </g>
+
+    <!-- ===== 등 (삐짐) ===== -->
+    <g id="back" opacity="0">
+      <path d="M150 26
+        C 92 26, 56 78, 52 150
+        C 49 208, 70 262, 116 270
+        C 132 274, 138 258, 150 258
+        C 162 258, 168 274, 184 270
+        C 230 262, 251 208, 248 150
+        C 244 78, 208 26, 150 26 Z" fill="url(#furBack)"/>
+      <path d="M150 150 C 146 196, 146 226, 150 252" stroke="#dcc49e" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
+      <ellipse cx="112" cy="264" rx="20" ry="13" fill="#f2e2c6"/>
+      <ellipse cx="188" cy="264" rx="20" ry="13" fill="#f2e2c6"/>
+    </g>
+
+    <!-- 반창고 (시그니처, 모든 상태 공통: 마지막에 그려 최상위) -->
+    <g id="bandaid" transform="rotate(-22 105 62)">
+      <rect x="62" y="50" width="86" height="26" rx="12" fill="#e8c9a0" stroke="#d4b288" stroke-width="1.5"/>
+      <rect x="90" y="54" width="30" height="18" rx="4" fill="#f0d9b8"/>
+      <g fill="#c9a87e">
+        <circle cx="72" cy="58" r="1.6"/><circle cx="79" cy="63" r="1.6"/><circle cx="72" cy="68" r="1.6"/>
+        <circle cx="138" cy="58" r="1.6"/><circle cx="131" cy="63" r="1.6"/><circle cx="138" cy="68" r="1.6"/>
+      </g>
+    </g>
+
+    <!-- 하트 (화해/애교) -->
+    <g id="hearts" opacity="0" fill="#f08a8a">
+      <path d="M58 90 c-5-8-18-4-16 5 c1 6 10 11 16 15 c6-4 15-9 16-15 c2-9-11-13-16-5z"/>
+      <path d="M242 78 c-4-7-15-3-13 4 c1 5 8 9 13 12 c5-3 12-7 13-12 c2-7-9-11-13-4z"/>
+    </g>
+  </svg>
+</div>
+<div id="hint">탭: 찌르기 / 길게: 꼬집기 / 문지르기: 간지럼 / 휙: 밀기 👆</div>
+
+<script>
+const ssomkim = document.getElementById('ssomkim');
+const speech = document.getElementById('speech');
+const stage = document.getElementById('stage');
+const hint = document.getElementById('hint');
+const $ = id => document.getElementById(id);
+
+let gauge = 0, state = 'calm', naked = false;
+let pressTimer = null, pressed = false, sulkTimer = null;
+
+// ── 사운드 (귀여운 고음 합성) ──
+let actx = null;
+function snd(freq, dur, type='sine', vol=.22, slideTo=null) {
+  if (!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type; o.frequency.setValueAtTime(freq, actx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(slideTo||freq*1.4, actx.currentTime+dur);
+  g.gain.setValueAtTime(vol, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001, actx.currentTime+dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(); o.stop(actx.currentTime+dur);
+}
+const kyu = ()=>{ snd(560,.16,'sine',.22,880); };                 // 뀨 (덩치 보정)
+const boing = ()=>{ snd(220,.18,'sine',.25,160); };                // 말랑
+const grr = ()=>{ snd(160,.22,'sawtooth',.12,120); };              // 부들
+const sparkle = ()=>{ snd(900,.1); setTimeout(()=>snd(1200,.12),90); setTimeout(()=>snd(1500,.18),190); };
+const giggle = ()=>{ [0,90,180,280,380].forEach((t,i)=>setTimeout(()=>snd(520+i*110,.09,'sine',.2,640+i*110),t)); };
+
+function say(t, ms=750){ speech.textContent=t; speech.style.opacity=1;
+  clearTimeout(say._t); say._t=setTimeout(()=>speech.style.opacity=0,ms); }
+
+function fluffs(n,x,y){
+  for(let i=0;i<n;i++){
+    const f=document.createElement('div'); f.className='fluff'; f.textContent='☁️';
+    f.style.left=x+'px'; f.style.top=y+'px'; stage.appendChild(f);
+    const a=Math.random()*Math.PI*2,d=40+Math.random()*80;
+    f.animate([{transform:'translate(0,0) scale(.6)',opacity:1},
+      {transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d-40}px) scale(1.2)`,opacity:0}],
+      {duration:800+Math.random()*400,easing:'ease-out'}).onfinish=()=>f.remove();
+  }
+}
+
+// ── 표정 세터 ──
+const BODY_SOFT = "M150 26 C 92 26, 56 78, 52 150 C 49 208, 70 262, 116 270 C 132 274, 138 258, 150 258 C 162 258, 168 274, 184 270 C 230 262, 251 208, 248 150 C 244 78, 208 26, 150 26 Z";
+const BODY_BUFF = "M150 30 C 96 30, 56 50, 50 92 C 46 128, 88 198, 114 260 C 122 274, 134 268, 150 268 C 166 268, 178 274, 186 260 C 212 198, 254 128, 250 92 C 244 50, 204 30, 150 30 Z";
+function setBuff(on){
+  $('body').setAttribute('d', on? BODY_BUFF : BODY_SOFT);
+  $('bellyShade').setAttribute('opacity', on? 0 : .45);
+  // 팔: 어깨에서 으쓱 들어올린 플렉스 포즈
+  $('armL').setAttribute('cx', on?64:78);  $('armL').setAttribute('cy', on?112:196);
+  $('armL').setAttribute('rx', on?26:20);  $('armL').setAttribute('ry', on?32:26);
+  $('armR').setAttribute('cx', on?236:222); $('armR').setAttribute('cy', on?112:196);
+  $('armR').setAttribute('rx', on?26:20);  $('armR').setAttribute('ry', on?32:26);
+  // 발: 좁아진 하체에 맞춰 모음
+  $('footL').setAttribute('cx', on?128:112);
+  $('footR').setAttribute('cx', on?172:188);
+}
+function faceSmug(){ // 기본: 씨익 + 반쯤 감은 눈
+  $('lidL').setAttribute('ry',8); $('lidR').setAttribute('ry',8);
+  $('browL').setAttribute('d','M86 110 Q102 102 118 110');
+  $('browR').setAttribute('d','M182 110 Q198 102 214 110');
+  $('mouth').setAttribute('d','M136 172 Q150 182 164 172');
+  $('steam').setAttribute('opacity',0); $('hearts').setAttribute('opacity',0);
+  setTears(0); setBodyColor(false); setBuff(false);
+}
+function faceAnnoyed(){
+  setBuff(false);
+  $('lidL').setAttribute('ry',11); $('lidR').setAttribute('ry',11);
+  $('browL').setAttribute('d','M86 104 Q102 112 118 116');
+  $('browR').setAttribute('d','M182 116 Q198 112 214 104');
+  $('mouth').setAttribute('d','M138 178 Q150 172 162 178');
+}
+function faceAngry(){
+  $('lidL').setAttribute('ry',2); $('lidR').setAttribute('ry',2);
+  $('browL').setAttribute('d','M86 100 Q104 114 120 120');
+  $('browR').setAttribute('d','M180 120 Q196 114 214 100');
+  $('mouth').setAttribute('d','M134 182 Q150 170 166 182');
+  $('steam').setAttribute('opacity',1); setBodyColor(true); setBuff(true);
+  ssomkim.classList.remove('jump'); void ssomkim.offsetWidth; ssomkim.classList.add('jump');
+  snd(120,.3,'sawtooth',.18,90);
+}
+function faceTeary(){
+  $('lidL').setAttribute('ry',2); $('lidR').setAttribute('ry',2);
+  $('browL').setAttribute('d','M88 106 Q102 98 116 104');
+  $('browR').setAttribute('d','M184 104 Q198 98 212 106');
+  $('mouth').setAttribute('d','M140 180 Q150 174 160 180');
+  setTears(1);
+}
+function faceHappy(){
+  setBuff(false);
+  $('lidL').setAttribute('ry',2); $('lidR').setAttribute('ry',2);
+  $('browL').setAttribute('d','M86 108 Q102 100 118 106');
+  $('browR').setAttribute('d','M182 106 Q198 100 214 108');
+  $('mouth').setAttribute('d','M134 170 Q150 188 166 170');
+  $('hearts').setAttribute('opacity',1); setTears(0); setBodyColor(false);
+}
+function faceHoldLaugh(){ // 웃음 참기: 입 꾹, 볼 빵빵
+  $('lidL').setAttribute('ry',12); $('lidR').setAttribute('ry',12);
+  $('mouth').setAttribute('d','M140 176 Q150 170 160 176');
+  $('blushL').setAttribute('opacity',1); $('blushR').setAttribute('opacity',1);
+}
+function faceLaugh(){ // 빵 터짐: 눈 감고 입 활짝
+  $('lidL').setAttribute('ry',20); $('lidR').setAttribute('ry',20);
+  $('browL').setAttribute('d','M88 132 Q104 120 120 132');
+  $('browR').setAttribute('d','M180 132 Q196 120 212 132');
+  $('mouth').setAttribute('d','M130 166 Q150 196 170 166');
+}
+function setTears(on){
+  ['tearL','tearR'].forEach(id=>{ $(id).setAttribute('rx',on?5:0); $(id).setAttribute('ry',on?7:0); });
+}
+function setBodyColor(red){
+  $('body').setAttribute('fill', red? '#eea98f' : 'url(#fur)');
+  $('blushL').setAttribute('opacity', red? .9 : .65);
+  $('blushR').setAttribute('opacity', red? .9 : .65);
+}
+function showBack(on){
+  $('front').setAttribute('opacity', on?0:1);
+  $('back').setAttribute('opacity', on?1:0);
+  // 반창고는 등에서도 보임 (정수리라)
+}
+
+// ── 상태 머신 ──
+function setState(s){
+  if(state===s) return; state=s;
+  if(s==='calm'){ showBack(false); faceSmug(); }
+  if(s==='annoyed'){ faceAnnoyed(); }
+  if(s==='angry'){ faceAngry(); say('어쩔래.',900); }
+  if(s==='sulking'){ showBack(true); say('흥.',900); grr();
+    sulkTimer = setTimeout(reconcile, 8000); }
+  if(s==='reconcile'){ showBack(false); faceTeary();
+    setTimeout(()=>{ faceHappy(); sparkle(); say('...다신 그러지 마💢',1300);
+      ssomkim.classList.add('wobble');
+      setTimeout(()=>{ gauge=0; setState('calm'); },2200);
+    },1300);
+  }
+}
+function reconcile(){ setState('reconcile'); }
+
+function addGauge(n){
+  gauge=Math.min(100,gauge+n);
+  if(state==='sulking'||state==='reconcile') return;
+  if(gauge>=100) setState('sulking');
+  else if(gauge>=70) setState('angry');
+  else if(gauge>=30) setState('annoyed');
+}
+setInterval(()=>{ if(gauge>0&&state!=='sulking'&&state!=='reconcile'){ gauge=Math.max(0,gauge-2);
+  if(gauge<30&&state!=='calm') setState('calm');
+  else if(gauge<70&&state==='angry') setState('annoyed'); } },1000);
+
+// ── 입력 ──
+// ── 밀어 넘어뜨리기 ──
+let fallen=false, fallDir=1, fallRock=null, fallTO=null, struggleInt=null;
+function pushOver(dir){
+  if(state==='sulking'||state==='reconcile'||fallen) return;
+  fallen=true; fallDir=dir; tickleE=0; tickling=null;
+  ssomkim.classList.remove('tremble','squash','jump','wobble','shake');
+  snd(500,.5,'sine',.2,150); say('우와아악?!',800);
+  faceTeary();
+  ssomkim.animate([{transform:'rotate(0deg) translateX(0)'},
+    {transform:`rotate(${dir*100}deg) translateX(${dir*36}px)`}],
+    {duration:650,easing:'cubic-bezier(.35,1.3,.6,1)',fill:'forwards'});
+  setTimeout(()=>{ if(!fallen) return;
+    fallRock=ssomkim.animate([{transform:`rotate(${dir*100}deg) translateX(${dir*36}px)`},
+      {transform:`rotate(${dir*76}deg) translateX(${dir*28}px)`},
+      {transform:`rotate(${dir*104}deg) translateX(${dir*38}px)`}],
+      {duration:1100,iterations:Infinity,easing:'ease-in-out'});
+    struggleInt=setInterval(()=>{
+      say(['읏차...','으랏차...','안 일어나져!!','...도와줄 거임 말 거임?'][Math.floor(Math.random()*4)],700);
+      snd(380,.1,'sine',.12,460);
+    },1500);
+  },650);
+  fallTO=setTimeout(()=>getUp(false),7500);
+}
+function getUp(helped){
+  if(!fallen) return; fallen=false;
+  clearTimeout(fallTO); clearInterval(struggleInt);
+  ssomkim.getAnimations().forEach(a=>a.cancel());
+  ssomkim.animate([{transform:`rotate(${fallDir*100}deg) translateX(${fallDir*36}px)`},
+    {transform:`rotate(${-fallDir*12}deg) translateX(0)`},
+    {transform:`rotate(${fallDir*5}deg)`},{transform:'rotate(0deg)'}],
+    {duration:900,easing:'ease-out'});
+  setTears(0); boing();
+  if(helped){ sparkle(); say('...누가 도와달랬냐. ...고맙고.',1500);
+    gauge=Math.max(0,gauge-10);
+  } else { say('퉤. 일부러 누워있던 거임.',1400); addGauge(18); }
+  setTimeout(()=>{ if(state==='calm')faceSmug(); else if(state==='annoyed')faceAnnoyed(); else if(state==='angry')faceAngry(); },950);
+}
+
+const pokes={ calm:['뭐.','왜.','지금 뭐 함?'], annoyed:['아 좀!','그만 눌러','야!!'],
+  angry:['터진다 진짜!!','으아아!!','💢💢'] };
+
+function poke(x,y){
+  if(state==='sulking'){ ssomkim.classList.remove('shake'); void ssomkim.offsetWidth;
+    ssomkim.classList.add('shake'); say('...',500); snd(200,.1,'sine',.08); return; }
+  if(state==='reconcile') return;
+  ssomkim.classList.remove('squash','jump'); void ssomkim.offsetWidth;
+  if(state==='angry'){ ssomkim.classList.add('jump'); grr(); }
+  else { ssomkim.classList.add('squash'); boing(); }
+  fluffs(3,x,y); kyu();
+  say(pokes[state][Math.floor(Math.random()*3)],600);
+  addGauge(8);
+}
+function pinchStart(){
+  if(state==='sulking'||state==='reconcile'||fallen) return;
+  pressed=true;
+  ssomkim.style.transition='transform .4s';
+  ssomkim.style.transform='scale(1.35,.6)';
+  snd(300,.4,'sine',.2,140);
+  faceTeary(); say('아아아 늘어난다고!!',900);
+}
+function pinchEnd(){
+  if(!pressed) return; pressed=false;
+  ssomkim.style.transform='';
+  setTimeout(()=>{ ssomkim.style.transition=''; },450);
+  ssomkim.classList.remove('wobble'); void ssomkim.offsetWidth;
+  ssomkim.classList.add('wobble'); boing();
+  if(navigator.vibrate) navigator.vibrate(30);
+  addGauge(14);
+  if(state!=='sulking'&&state!=='reconcile'){
+    setTimeout(()=>{ if(state==='calm')faceSmug(); if(state==='annoyed')faceAnnoyed(); if(state==='angry')faceAngry(); },500);
+  }
+}
+
+let sx=0, sy=0, st=0, lx=0, ly=0;
+ssomkim.addEventListener('pointerdown', e=>{
+  e.preventDefault(); hint.style.opacity=0; isDown=true;
+  try{ ssomkim.setPointerCapture(e.pointerId); }catch(_){}
+  const r=stage.getBoundingClientRect();
+  const x=e.clientX-r.left, y=e.clientY-r.top;
+  sx=lx=e.clientX; sy=ly=e.clientY; st=Date.now();
+  if(!fallen) pressTimer=setTimeout(()=>{ pressTimer=null; pinchStart(); },350);
+  ssomkim._xy=[x,y];
+});
+window.addEventListener('pointerup', ()=>{
+  isDown=false;
+  const dx=lx-sx, dy=ly-sy, dt=Date.now()-st;
+  if(fallen){ if(Math.abs(dx)+Math.abs(dy)<30){ if(pressTimer){clearTimeout(pressTimer);pressTimer=null;} getUp(true); } return; }
+  if(!pressed && dt<350 && Math.abs(dx)>90 && Math.abs(dx)>Math.abs(dy)*1.3){
+    if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; }
+    pushOver(dx>0?1:-1); return;
+  }
+  if(pressTimer){ clearTimeout(pressTimer); pressTimer=null;
+    if(!tickling) poke(...ssomkim._xy||[150,150]); }
+  else pinchEnd();
+});
+
+// 문지르기: 삐짐 중엔 쓰다듬기(화해), 평소엔 간지럼
+let strokeDist=0, isDown=false, tickleE=0, tickling=null;
+ssomkim.addEventListener('pointermove', e=>{
+  lx=e.clientX; ly=e.clientY;
+  if(fallen) return;
+  if(state==='sulking'){
+    strokeDist+=Math.abs(e.movementX)+Math.abs(e.movementY);
+    if(strokeDist>600){ strokeDist=0; clearTimeout(sulkTimer); reconcile(); }
+    return;
+  }
+  if(!isDown || pressed || state==='reconcile') return;
+  const sp=Math.abs(e.movementX)+Math.abs(e.movementY);
+  if(sp>5){
+    if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; } // 꼬집기 취소
+    tickleE+=sp;
+  }
+  if(tickleE>140 && !tickling){
+    tickling='hold'; faceHoldLaugh(); ssomkim.classList.add('tremble');
+    say('...읏... 하나도 안 간지러운데...',900); snd(420,.15,'sine',.12,500);
+  }
+  if(tickleE>460 && tickling==='hold'){
+    tickling='burst'; ssomkim.classList.remove('tremble');
+    faceLaugh(); giggle();
+    ssomkim.classList.remove('wobble'); void ssomkim.offsetWidth; ssomkim.classList.add('wobble');
+    fluffs(6,150,150); say('꺄하하하핰!! 그만!! 핰!!',1300);
+    if(navigator.vibrate) navigator.vibrate([20,40,20,40,20]);
+    addGauge(5);
+    setTimeout(()=>{ tickling=null; tickleE=0;
+      if(state==='calm')faceSmug(); else if(state==='annoyed')faceAnnoyed(); else if(state==='angry')faceAngry();
+    },1500);
+  }
+});
+setInterval(()=>{ if(tickling!=='burst') tickleE=Math.max(0,tickleE*0.82-2);
+  if(tickleE<60 && tickling==='hold'){ tickling=null; ssomkim.classList.remove('tremble');
+    if(state==='calm')faceSmug(); else if(state==='annoyed')faceAnnoyed(); else if(state==='angry')faceAngry(); }
+},200);
+
+faceSmug();
+// 숨쉬기
+$('body').animate([{transform:'scale(1,1)'},{transform:'scale(1.015,1.03)'},{transform:'scale(1,1)'}],
+  {duration:2900,iterations:Infinity,easing:'ease-in-out'});
+// idle 약올리기: 가끔 혀 대신 눈썹 으쓱
+setInterval(()=>{ if(state==='calm'&&!pressed){
+  $('browR').setAttribute('d','M182 102 Q198 94 214 102');
+  setTimeout(()=>{ if(state==='calm') $('browR').setAttribute('d','M182 110 Q198 102 214 110'); },400);
+}},4000);
+</script>
+</body>
+</html>
