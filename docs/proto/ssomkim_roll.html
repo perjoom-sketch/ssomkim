@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>쏨킴 굴리기 (프로토)</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; overflow:hidden; touch-action:none; overscroll-behavior:none; background:#2a3a2e; }
+  body { font-family:-apple-system,'Apple SD Gothic Neo',sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; user-select:none; -webkit-user-select:none; }
+  #wrap { position:relative; width:min(96vw,440px); aspect-ratio:3/4; }
+  #game { width:100%; height:100%; display:block; border-radius:18px; background:#7da06a; box-shadow:0 12px 40px rgba(0,0,0,.4); }
+  #hud { position:absolute; top:12px; left:0; right:0; text-align:center; color:#fff; font-weight:800; font-size:15px; text-shadow:0 2px 4px rgba(0,0,0,.4); pointer-events:none; }
+  #msg { position:absolute; top:46%; left:50%; transform:translate(-50%,-50%); background:#fffdf8; border:3px solid #4a3a2a; border-radius:16px; padding:10px 18px; font-weight:800; font-size:18px; color:#4a3a2a; opacity:0; transition:opacity .2s; pointer-events:none; white-space:nowrap; }
+  #hint { margin-top:14px; color:#cfe0c4; font-size:13px; font-weight:600; text-align:center; line-height:1.5; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <svg id="game" viewBox="0 0 300 400">
+    <defs>
+      <radialGradient id="fur" cx="40%" cy="30%" r="78%">
+        <stop offset="0%" stop-color="#fff"/><stop offset="55%" stop-color="#f4eee4"/>
+        <stop offset="85%" stop-color="#ddd0bd"/><stop offset="100%" stop-color="#c9b9a3"/>
+      </radialGradient>
+    </defs>
+    <!-- 레인 -->
+    <rect x="40" y="0" width="220" height="400" fill="#6b9159" opacity=".5"/>
+    <line x1="40" y1="0" x2="40" y2="400" stroke="#5c7d4c" stroke-width="3"/>
+    <line x1="260" y1="0" x2="260" y2="400" stroke="#5c7d4c" stroke-width="3"/>
+    <!-- 거터(양옆 도랑) 안내선 -->
+    <line x1="150" y1="350" x2="150" y2="370" stroke="#fff" stroke-width="2" stroke-dasharray="4 4" opacity=".4"/>
+
+    <!-- 핀 그룹 (상단) -->
+    <g id="pins"></g>
+
+    <!-- 조준 화살표 -->
+    <g id="aim" opacity="0">
+      <line id="aimLine" x1="150" y1="350" x2="150" y2="280" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-dasharray="6 6"/>
+      <polygon id="aimHead" points="150,272 144,286 156,286" fill="#fff"/>
+    </g>
+
+    <!-- 쏨킴 (탑다운, 정면 얼굴) -->
+    <g id="ssom" transform="translate(150,350)">
+      <g id="ssomRot">
+        <!-- 몸 -->
+        <ellipse cx="0" cy="2" rx="20" ry="23" fill="url(#fur)" stroke="#5d4a33" stroke-width="2"/>
+        <!-- 바보털 (머리쪽=위) -->
+        <path d="M0 -22 Q-6 -34 -14 -31 Q-4 -38 4 -26" fill="url(#fur)" stroke="#5d4a33" stroke-width="1.6"/>
+        <!-- 반창고 -->
+        <g transform="rotate(-20)"><rect x="6" y="-20" width="16" height="6" rx="3" fill="#e8c9a0" stroke="#d4b288" stroke-width="1"/></g>
+        <!-- 볼터치 -->
+        <ellipse cx="-12" cy="4" rx="5" ry="3.5" fill="#f3a8a0" opacity=".6"/>
+        <ellipse cx="12" cy="4" rx="5" ry="3.5" fill="#f3a8a0" opacity=".6"/>
+        <!-- 눈 -->
+        <g id="eyes">
+          <circle cx="-7" cy="-4" r="3.5" fill="#3a2c1c"/>
+          <circle cx="7" cy="-4" r="3.5" fill="#3a2c1c"/>
+        </g>
+        <!-- 입 -->
+        <path id="mouth" d="M-5 6 Q0 10 5 6" stroke="#8a6a4a" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </g>
+    </g>
+  </svg>
+  <div id="hud"></div>
+  <div id="msg"></div>
+</div>
+<div id="hint">아래쪽 쏨킴을 <b>드래그</b>해서 힘·방향 조준 → 놓으면 발사<br>머리(위)가 무거워 휘어 굴러갑니다. 물컹해서 속도도 들쭉날쭉!</div>
+
+<script>
+const svg=document.getElementById('game');
+const ssom=document.getElementById('ssom');
+const ssomRot=document.getElementById('ssomRot');
+const eyes=document.getElementById('eyes');
+const mouth=document.getElementById('mouth');
+const aim=document.getElementById('aim'), aimLine=document.getElementById('aimLine'), aimHead=document.getElementById('aimHead');
+const pinsG=document.getElementById('pins');
+const hud=document.getElementById('hud'), msg=document.getElementById('msg');
+const $=id=>document.getElementById(id);
+
+let actx=null;
+function snd(f,d,t='sine',v=.2,to=null){try{if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();const o=actx.createOscillator(),g=actx.createGain();o.type=t;o.frequency.setValueAtTime(f,actx.currentTime);if(to)o.frequency.exponentialRampToValueAtTime(to,actx.currentTime+d);g.gain.setValueAtTime(v,actx.currentTime);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d);o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+d);}catch(e){}}
+
+const W=300,H=400;
+let state='aim';            // aim | roll | celebrate
+let px=150,py=350;          // 쏨킴 위치
+let vx=0,vy=0;              // 속도
+let heading=0;              // 진행 방향(라디안, 위쪽=-90도 기준)
+let rot=0;                  // 시각 회전
+let pins=[];
+let round=1, cleared=0;
+
+function setMsg(t,ms=1200){msg.textContent=t;msg.style.opacity=1;clearTimeout(setMsg._t);setMsg._t=setTimeout(()=>msg.style.opacity=0,ms);}
+function setHud(){hud.textContent=`ROUND ${round}  ·  쓰러뜨린 핀 ${cleared}`;}
+
+function makePins(){
+  pins=[]; pinsG.innerHTML='';
+  // 볼링 삼각 배치 (4행)
+  const baseX=150, baseY=80, gap=26;
+  let id=0;
+  for(let r=0;r<4;r++){
+    for(let c=0;c<=r;c++){
+      const x=baseX-(r*gap)/2+c*gap;
+      const y=baseY+r*gap*0.9;
+      pins.push({x,y,down:false,id:id});
+      const el=document.createElementNS('http://www.w3.org/2000/svg','g');
+      el.setAttribute('id','pin'+id);
+      el.innerHTML=`<ellipse cx="${x}" cy="${y}" rx="9" ry="11" fill="#fff" stroke="#d44" stroke-width="2"/><ellipse cx="${x}" cy="${y-4}" rx="5" ry="4" fill="#f99"/>`;
+      pinsG.appendChild(el);
+      id++;
+    }
+  }
+}
+
+function reset(){
+  state='aim'; px=150; py=350; vx=0; vy=0; rot=0;
+  ssom.setAttribute('transform',`translate(${px},${py})`);
+  ssomRot.setAttribute('transform','rotate(0)');
+  eyes.innerHTML='<circle cx="-7" cy="-4" r="3.5" fill="#3a2c1c"/><circle cx="7" cy="-4" r="3.5" fill="#3a2c1c"/>';
+  mouth.setAttribute('d','M-5 6 Q0 10 5 6');
+  makePins(); setHud();
+}
+
+// ── 조준 (드래그) ──
+let dragging=false, startX=0, startY=0;
+function evtXY(e){const r=svg.getBoundingClientRect();const cx=(e.touches?e.touches[0].clientX:e.clientX)-r.left;const cy=(e.touches?e.touches[0].clientY:e.clientY)-r.top;return [cx/r.width*W, cy/r.height*H];}
+
+svg.addEventListener('pointerdown',e=>{
+  if(state!=='aim')return;
+  e.preventDefault(); dragging=true;
+  [startX,startY]=evtXY(e);
+  aim.setAttribute('opacity','1');
+});
+svg.addEventListener('pointermove',e=>{
+  if(!dragging||state!=='aim')return;
+  const [x,y]=evtXY(e);
+  // 당긴 반대 방향으로 발사 (새총처럼). 위로만 쏘게 제한
+  let dx=px-x, dy=py-y;
+  if(dy<5)dy=5; // 아래로는 못 쏨
+  const len=Math.min(Math.hypot(dx,dy),90);
+  const ang=Math.atan2(dy,dx);
+  const tx=px+Math.cos(ang)*len, ty=py-Math.sin(ang)*len*-1; // 화살표는 진행방향
+  const ex=px+Math.cos(ang)*len*( -1), ey=py+Math.sin(ang)*( -1)*len;
+  aimLine.setAttribute('x1',px); aimLine.setAttribute('y1',py);
+  aimLine.setAttribute('x2',px+(x-px)*-1); aimLine.setAttribute('y2',py+(y-py)*-1);
+  aimHead.style.display='none';
+  // 파워 표시용 입 모양 (당길수록 긴장)
+  const pw=len/90;
+  mouth.setAttribute('d',`M-5 ${6+pw*2} Q0 ${10+pw*3} 5 ${6+pw*2}`);
+});
+svg.addEventListener('pointerup',e=>{
+  if(!dragging||state!=='aim')return;
+  dragging=false; aim.setAttribute('opacity','0');
+  const [x,y]=evtXY(e);
+  let dx=px-x, dy=py-y;
+  if(dy<5)dy=5;
+  const len=Math.min(Math.hypot(dx,dy),90);
+  if(len<12){return;} // 너무 약하면 발사 안함
+  const power=len/90;
+  const ang=Math.atan2(dy,dx); // 발사각
+  vx=Math.cos(ang)*power*5.5;
+  vy=-Math.abs(Math.sin(ang))*power*5.5 - power*1.5; // 위로
+  state='roll';
+  snd(300,.2,'sine',.2,140);
+  setMsg('굴러간다!',700);
+}); 
+
+// ── 물리 루프 ──
+function loop(){
+  if(state==='roll'){
+    // 1) 머리쪽(진행방향 위)이 무거워 휜다: 속도 방향에 수직으로 살짝 꺾기
+    const sp=Math.hypot(vx,vy);
+    if(sp>0.3){
+      // 휨: 머리(위쪽)가 무거워 왼쪽으로 쏠리는 경향 + 진행방향 기준 곡률
+      const curve=0.018; // 휨 강도
+      const nx=-vy/sp, ny=vx/sp; // 수직벡터
+      vx+=nx*sp*curve; vy+=ny*sp*curve;
+    }
+    // 2) 물컹: 속도에 불규칙 맥동 (들쭉날쭉)
+    const wobble=0.96+Math.sin(performance.now()/90)*0.06+(Math.random()-0.5)*0.04;
+    vx*=wobble; vy*=wobble;
+    // 3) 마찰
+    vx*=0.992; vy*=0.992;
+    px+=vx; py+=vy;
+    // 4) 회전(구르는 느낌) — 속도 비례
+    rot+=sp*1.8;
+    // 물컹 시각화: 진행 중 살짝 찌부 변형
+    const sq=1+Math.sin(performance.now()/80)*0.06;
+    ssomRot.setAttribute('transform',`rotate(${rot}) scale(${sq},${2-sq})`);
+    ssom.setAttribute('transform',`translate(${px},${py})`);
+
+    // 벽 반사
+    if(px<55){px=55;vx=Math.abs(vx)*0.6;} 
+    if(px>245){px=245;vx=-Math.abs(vx)*0.6;}
+    // 핀 충돌
+    pins.forEach(p=>{
+      if(p.down)return;
+      if(Math.hypot(px-p.x,py-p.y)<22){
+        p.down=true; cleared++; setHud();
+        const el=$('pin'+p.id);
+        el.animate([{transform:'scale(1)',opacity:1},{transform:`translate(${(Math.random()-.5)*30}px,${-15-Math.random()*15}px) rotate(${(Math.random()-.5)*120}deg) scale(1.1)`,opacity:0}],{duration:400,easing:'ease-out',fill:'forwards'});
+        snd(500+Math.random()*200,.12,'triangle',.18);
+        // 충돌 시 속도 약간 흡수
+        vx*=0.82; vy*=0.82;
+      }
+    });
+
+    // 정지 또는 화면 위 도달 → 결과
+    if(sp<0.35 || py<30){
+      state='celebrate';
+      const total=pins.filter(p=>p.down).length;
+      if(py<30 && total<pins.length){ /* 위로 빠져나감 */ }
+      celebrate(total);
+    }
+  }
+  requestAnimationFrame(loop);
+}
+
+function celebrate(total){
+  // 어지러움 세리머니: 눈 핑글 + 머리 휘청
+  let t=0;
+  const spin=setInterval(()=>{
+    t+=1;
+    const a=t*40;
+    eyes.innerHTML=`<text x="-7" y="-1" font-size="9" fill="#3a2c1c" text-anchor="middle" transform="rotate(${a} -7 -4)">@</text><text x="7" y="-1" font-size="9" fill="#3a2c1c" text-anchor="middle" transform="rotate(${-a} 7 -4)">@</text>`;
+    ssomRot.setAttribute('transform',`rotate(${Math.sin(t/2)*18}) scale(${1+Math.sin(t)*0.05},${1-Math.sin(t)*0.05})`);
+    mouth.setAttribute('d','M-5 8 Q0 4 5 8'); // 어질한 입
+  },60);
+  snd(700,.5,'sine',.2,300);
+  const allDown = total>=pins.length;
+  setMsg(allDown?'스트라이크!! 우웨에 어지러워':`${total}개 쓰러뜨림! 어질어질..`,2000);
+  setTimeout(()=>{
+    clearInterval(spin);
+    setMsg(allDown?'"이 구역 1등은 나임"':'"코너에서 미끄러진 거임"',1600);
+    setTimeout(()=>{ round++; reset(); },1700);
+  },2000);
+}
+
+reset(); loop();
+</script>
+</body>
+</html>

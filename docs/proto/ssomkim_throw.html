@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>쏨킴 던지기 (프로토)</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; overflow:hidden; touch-action:none; overscroll-behavior:none; background:#243b2e; }
+  body { font-family:-apple-system,'Apple SD Gothic Neo',sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; user-select:none; -webkit-user-select:none; }
+  #wrap { position:relative; width:min(96vw,460px); aspect-ratio:4/3; }
+  #game { width:100%; height:100%; display:block; border-radius:18px; background:linear-gradient(#bfe3f2 0%,#d8eef0 62%,#cde0b0 62%,#bcd49a 100%); box-shadow:0 12px 40px rgba(0,0,0,.4); }
+  #hud { position:absolute; top:12px; left:0; right:0; text-align:center; color:#3a5a3a; font-weight:800; font-size:15px; pointer-events:none; }
+  #msg { position:absolute; top:40%; left:50%; transform:translate(-50%,-50%); background:#fffdf8; border:3px solid #4a3a2a; border-radius:16px; padding:9px 16px; font-weight:800; font-size:17px; color:#4a3a2a; opacity:0; transition:opacity .2s; pointer-events:none; white-space:nowrap; }
+  #hint { margin-top:14px; color:#cfe0c4; font-size:13px; font-weight:600; text-align:center; line-height:1.5; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <svg id="game" viewBox="0 0 400 300">
+    <defs>
+      <radialGradient id="fur" cx="38%" cy="30%" r="78%">
+        <stop offset="0%" stop-color="#fff"/><stop offset="55%" stop-color="#f4eee4"/>
+        <stop offset="85%" stop-color="#ddd0bd"/><stop offset="100%" stop-color="#c9b9a3"/>
+      </radialGradient>
+    </defs>
+
+    <!-- 과녁 (오른쪽, 동심원) -->
+    <g id="target">
+      <circle cx="330" cy="120" r="46" fill="#e8554e"/>
+      <circle cx="330" cy="120" r="32" fill="#fff"/>
+      <circle cx="330" cy="120" r="20" fill="#e8554e"/>
+      <circle cx="330" cy="120" r="9" fill="#ffd23e"/>
+    </g>
+    <!-- 과녁 받침대 -->
+    <rect x="326" y="166" width="8" height="22" fill="#7a5a3a"/>
+
+    <!-- 발사대 (왼쪽 하단) -->
+    <ellipse cx="60" cy="250" rx="34" ry="10" fill="#9a7a52" opacity=".5"/>
+
+    <!-- 비행 궤적 점선 (조준 시) -->
+    <path id="traj" d="" stroke="#fff" stroke-width="2.5" fill="none" stroke-dasharray="3 7" stroke-linecap="round" opacity="0"/>
+
+    <!-- 쏨킴 -->
+    <g id="ssom" transform="translate(60,232)">
+      <g id="ssomBody">
+        <ellipse cx="0" cy="0" rx="22" ry="24" fill="url(#fur)" stroke="#5d4a33" stroke-width="2"/>
+        <path d="M0 -24 Q-6 -36 -14 -33 Q-4 -40 4 -28" fill="url(#fur)" stroke="#5d4a33" stroke-width="1.6"/>
+        <g transform="rotate(-20)"><rect x="6" y="-22" width="16" height="6" rx="3" fill="#e8c9a0" stroke="#d4b288" stroke-width="1"/></g>
+        <ellipse cx="-13" cy="6" rx="6" ry="4" fill="#f3a8a0" opacity=".6"/>
+        <ellipse cx="13" cy="6" rx="6" ry="4" fill="#f3a8a0" opacity=".6"/>
+        <g id="eyes">
+          <ellipse cx="-8" cy="-4" rx="6" ry="7" fill="#fff" stroke="#5d4a33" stroke-width="1"/><circle id="pL" cx="-7" cy="-3" r="3.5" fill="#3a2c1c"/>
+          <ellipse cx="8" cy="-4" rx="6" ry="7" fill="#fff" stroke="#5d4a33" stroke-width="1"/><circle id="pR" cx="9" cy="-3" r="3.5" fill="#3a2c1c"/>
+        </g>
+        <path id="mouth" d="M-6 8 Q0 13 6 8" stroke="#8a6a4a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </g>
+    </g>
+  </svg>
+  <div id="hud"></div>
+  <div id="msg"></div>
+</div>
+<div id="hint">쏨킴을 <b>당겼다 놓아</b> 발사 → 포물선 그리며 날아가 과녁에 <b>철퍼덕</b><br>물컹해서 날아가는 중에도 살짝 흔들립니다</div>
+
+<script>
+const svg=document.getElementById('game');
+const ssom=document.getElementById('ssom'), body=document.getElementById('ssomBody');
+const traj=document.getElementById('traj'), eyes=document.getElementById('eyes'), mouth=document.getElementById('mouth');
+const hud=document.getElementById('hud'), msg=document.getElementById('msg');
+const $=id=>document.getElementById(id);
+const W=400,H=300, TX=330,TY=120;
+const homeX=60, homeY=232;
+
+let actx=null;
+function snd(f,d,t='sine',v=.2,to=null){try{if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();const o=actx.createOscillator(),g=actx.createGain();o.type=t;o.frequency.setValueAtTime(f,actx.currentTime);if(to)o.frequency.exponentialRampToValueAtTime(to,actx.currentTime+d);g.gain.setValueAtTime(v,actx.currentTime);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d);o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+d);}catch(e){}}
+
+// 노이즈 버스트 (철퍼덕/찰싹용)
+function noise(dur,v=.25,lp=900){try{if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();const n=actx.sampleRate*dur,b=actx.createBuffer(1,n,actx.sampleRate),ch=b.getChannelData(0);for(let i=0;i<n;i++)ch[i]=(Math.random()*2-1)*(1-i/n);const src=actx.createBufferSource();src.buffer=b;const f=actx.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(lp,actx.currentTime);const g=actx.createGain();g.gain.setValueAtTime(v,actx.currentTime);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+dur);src.connect(f);f.connect(g);g.connect(actx.destination);src.start();}catch(e){}}
+
+// 효과음 세트
+const sfxStretch = ()=>{ snd(180,.18,'sine',.18,420); };           // 늘어남(고무 당기는 느낌)
+const sfxLaunch  = ()=>{ snd(520,.12,'sine',.2,180); noise(.05,.12,2000); }; // 퓽! 발사
+const sfxFly     = ()=>{ snd(700,.5,'sine',.05,500); };            // 휘이익(작게)
+const sfxSplat   = ()=>{ noise(.16,.32,700); snd(140,.16,'sine',.22,70); };  // 철퍼덕(점착)
+const sfxBull    = ()=>{ snd(900,.1);setTimeout(()=>snd(1300,.12),80);setTimeout(()=>snd(1700,.16),170); }; // 정중앙 띠리링
+const sfxMiss    = ()=>{ noise(.2,.3,500); snd(110,.22,'sine',.2,60); };      // 바닥 철퍼덕(둔탁)
+
+// ── BGM (경쾌한 루프, Web Audio 합성. 효과음보다 작게) ──
+let bgmOn=false, bgmTimer=null, bgmStep=0, bgmGain=null;
+// 통통 튀는 메이저 멜로디 (C장조 계열, 8비트 느낌)
+const MELODY=[ 523,0,659,0, 784,659,523,0, 587,0,698,0, 784,0,659,0,
+               523,0,659,0, 784,880,784,0, 698,659,587,0, 523,0,0,0 ];
+const BASS=[ 131,131,196,196, 175,175,196,196 ];
+function bgmTick(){
+  const t=actx.currentTime;
+  // 멜로디
+  const m=MELODY[bgmStep%MELODY.length];
+  if(m>0){ const o=actx.createOscillator(),g=actx.createGain(); o.type='square'; o.frequency.value=m;
+    g.gain.setValueAtTime(.05,t); g.gain.exponentialRampToValueAtTime(.001,t+.16);
+    o.connect(g); g.connect(bgmGain); o.start(t); o.stop(t+.16); }
+  // 베이스 (느리게)
+  if(bgmStep%4===0){ const b=BASS[(bgmStep/4)%BASS.length]; const o=actx.createOscillator(),g=actx.createGain();
+    o.type='triangle'; o.frequency.value=b; g.gain.setValueAtTime(.06,t); g.gain.exponentialRampToValueAtTime(.001,t+.3);
+    o.connect(g); g.connect(bgmGain); o.start(t); o.stop(t+.3); }
+  bgmStep++;
+}
+function startBGM(){
+  if(bgmOn)return;
+  try{ if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended')actx.resume();
+    bgmGain=actx.createGain(); bgmGain.gain.value=0.5; bgmGain.connect(actx.destination); // 전체 BGM 볼륨(효과음보다 작게)
+    bgmOn=true; bgmStep=0; bgmTimer=setInterval(bgmTick,150); // 템포
+  }catch(e){}
+}
+
+let state='aim'; // aim | fly | stick
+let px=homeX,py=homeY,vx=0,vy=0,rot=0,score=0,shots=0;
+const G=0.34; // 중력
+
+function setMsg(t,ms=1400){msg.textContent=t;msg.style.opacity=1;clearTimeout(setMsg._t);setMsg._t=setTimeout(()=>msg.style.opacity=0,ms);}
+function setHud(){hud.textContent=`발사 ${shots}  ·  점수 ${score}`;}
+setHud();
+
+function evtXY(e){const r=svg.getBoundingClientRect();return [((e.touches?e.touches[0].clientX:e.clientX)-r.left)/r.width*W, ((e.touches?e.touches[0].clientY:e.clientY)-r.top)/r.height*H];}
+
+let dragging=false;
+svg.addEventListener('pointerdown',e=>{ if(state!=='aim')return; e.preventDefault(); dragging=true; startBGM(); sfxStretch(); });
+svg.addEventListener('pointermove',e=>{
+  if(!dragging||state!=='aim')return;
+  const [x,y]=evtXY(e);
+  // 당긴 만큼 늘어나는 시각 효과 (발사대 기준 반대로 늘림)
+  let dx=homeX-x, dy=homeY-y;
+  const len=Math.min(Math.hypot(dx,dy),70);
+  const ang=Math.atan2(dy,dx);
+  // 쏨킴 위치를 당긴 쪽으로 약간 이동 + 늘어남
+  const pull=len/70;
+  px=homeX-Math.cos(ang)*len*0.5; py=homeY-Math.sin(ang)*len*0.5;
+  ssom.setAttribute('transform',`translate(${px},${py})`);
+  body.setAttribute('transform',`rotate(${ang*180/Math.PI+90}) scale(${1+pull*0.5},${1-pull*0.25})`);
+  mouth.setAttribute('d',`M-6 ${8+pull*3} Q0 ${5+pull} 6 ${8+pull*3}`); // 긴장한 입
+  // 궤적 미리보기
+  const pvx=Math.cos(ang)*pull*9, pvy=Math.sin(ang)*pull*9;
+  let tx=px,ty=py,tvx=pvx,tvy=pvy,d='M'+tx+' '+ty;
+  for(let i=0;i<30;i++){tvy+=G;tx+=tvx;ty+=tvy;d+=` L${tx.toFixed(0)} ${ty.toFixed(0)}`;if(ty>H)break;}
+  traj.setAttribute('d',d); traj.setAttribute('opacity','.7');
+});
+svg.addEventListener('pointerup',e=>{
+  if(!dragging||state!=='aim')return; dragging=false;
+  const [x,y]=evtXY(e);
+  let dx=homeX-x, dy=homeY-y;
+  const len=Math.min(Math.hypot(dx,dy),70);
+  traj.setAttribute('opacity','0');
+  if(len<12){ px=homeX;py=homeY;ssom.setAttribute('transform',`translate(${px},${py})`);body.setAttribute('transform','');mouth.setAttribute('d','M-6 8 Q0 13 6 8');return; }
+  const ang=Math.atan2(dy,dx), pull=len/70;
+  vx=Math.cos(ang)*pull*9; vy=Math.sin(ang)*pull*9;
+  sfxFly();
+  state='fly'; shots++; setHud();
+  body.setAttribute('transform','');
+  sfxLaunch();
+});
+
+function stickTo(hitDist){
+  state='stick';
+  // 과녁 점착: 물컹 눌러붙는 변형
+  body.animate([{transform:'scale(1,1)'},{transform:'scale(1.5,.6)'},{transform:'scale(1.15,.9)'}],{duration:260,easing:'ease-out',fill:'forwards'});
+
+  let pts;
+  if(hitDist<10){pts=100;}
+  else if(hitDist<22){pts=50;}
+  else if(hitDist<46){pts=20;}
+  else {pts=0;}
+  score+=pts; setHud();
+  sfxSplat();
+  if(pts>=100){ setTimeout(sfxBull,180); }
+  else if(pts>0){ setTimeout(()=>snd(620,.12),180); }
+  // 눈 어질 (살짝)
+  setTimeout(()=>{ eyes.innerHTML=`<text x="-8" y="-1" font-size="9" fill="#3a2c1c" text-anchor="middle">×</text><text x="8" y="-1" font-size="9" fill="#3a2c1c" text-anchor="middle">×</text>`; },200);
+  setTimeout(reset,2000);
+}
+function missGround(){
+  state='stick';
+  body.animate([{transform:'scale(1,1)'},{transform:'scale(1.6,.4)'}],{duration:200,fill:'forwards'});
+  sfxMiss();
+  setTimeout(reset,1700);
+}
+function reset(){
+  state='aim'; px=homeX;py=homeY;vx=vy=0;rot=0;
+  ssom.setAttribute('transform',`translate(${px},${py})`);
+  body.setAttribute('transform',''); body.getAnimations().forEach(a=>a.cancel());
+  eyes.innerHTML=`<ellipse cx="-8" cy="-4" rx="6" ry="7" fill="#fff" stroke="#5d4a33" stroke-width="1"/><circle cx="-7" cy="-3" r="3.5" fill="#3a2c1c"/><ellipse cx="8" cy="-4" rx="6" ry="7" fill="#fff" stroke="#5d4a33" stroke-width="1"/><circle cx="9" cy="-3" r="3.5" fill="#3a2c1c"/>`;
+  mouth.setAttribute('d','M-6 8 Q0 13 6 8');
+}
+
+function loop(){
+  if(state==='fly'){
+    vy+=G;
+    // 물컹: 비행 중 미세 흔들림 (정확히 안 감)
+    vx+=Math.sin(performance.now()/70)*0.04;
+    vy+=Math.cos(performance.now()/90)*0.03;
+    px+=vx; py+=vy; rot+=Math.hypot(vx,vy)*0.6;
+    // 비행 중 늘어진 변형 (속도방향)
+    const ang=Math.atan2(vy,vx);
+    body.setAttribute('transform',`rotate(${ang*180/Math.PI+90}) scale(1.15,.9)`);
+    ssom.setAttribute('transform',`translate(${px},${py})`);
+    // 과녁 충돌
+    const dT=Math.hypot(px-TX,py-TY);
+    if(dT<46){ px=px;py=py; ssom.setAttribute('transform',`translate(${px},${py})`); stickTo(dT); }
+    // 바닥/화면 밖
+    else if(py>H-10||px>W+30){ if(py>H-10){px=Math.min(px,W);py=H-10;ssom.setAttribute('transform',`translate(${px},${py})`);} missGround(); }
+  }
+  requestAnimationFrame(loop);
+}
+reset(); loop();
+</script>
+</body>
+</html>
