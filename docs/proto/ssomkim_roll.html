@@ -67,6 +67,8 @@
 </div>
 <div id="hint">아래쪽 쏨킴을 <b>드래그</b>해서 힘·방향 조준 → 놓으면 발사<br>머리(위)가 무거워 휘어 굴러갑니다. 물컹해서 속도도 들쭉날쭉!</div>
 
+<!-- 물리 코어 공유: 굴리기/던지기/점프가 같은 모듈을 파라미터만 바꿔 사용 -->
+<script src="../../js/games/physics.js"></script>
 <script>
 const svg=document.getElementById('game');
 const ssom=document.getElementById('ssom');
@@ -82,11 +84,12 @@ let actx=null;
 function snd(f,d,t='sine',v=.2,to=null){try{if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();const o=actx.createOscillator(),g=actx.createGain();o.type=t;o.frequency.setValueAtTime(f,actx.currentTime);if(to)o.frequency.exponentialRampToValueAtTime(to,actx.currentTime+d);g.gain.setValueAtTime(v,actx.currentTime);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d);o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+d);}catch(e){}}
 
 const W=300,H=400;
+
+// 굴리기 프리셋으로 코어 월드 생성 — 던지기/점프와 "동일 코어, 다른 파라미터"
+const world=AppPhysics.createWorld('roll');
+const puff=AppPhysics.createBody({x:150,y:350,r:20});
+
 let state='aim';            // aim | roll | celebrate
-let px=150,py=350;          // 쏨킴 위치
-let vx=0,vy=0;              // 속도
-let heading=0;              // 진행 방향(라디안, 위쪽=-90도 기준)
-let rot=0;                  // 시각 회전
 let pins=[];
 let round=1, cleared=0;
 
@@ -95,7 +98,6 @@ function setHud(){hud.textContent=`ROUND ${round}  ·  쓰러뜨린 핀 ${cleare
 
 function makePins(){
   pins=[]; pinsG.innerHTML='';
-  // 볼링 삼각 배치 (4행)
   const baseX=150, baseY=80, gap=26;
   let id=0;
   for(let r=0;r<4;r++){
@@ -113,8 +115,9 @@ function makePins(){
 }
 
 function reset(){
-  state='aim'; px=150; py=350; vx=0; vy=0; rot=0;
-  ssom.setAttribute('transform',`translate(${px},${py})`);
+  state='aim';
+  puff.x=150; puff.y=350; puff.vx=0; puff.vy=0; puff.rot=0;
+  ssom.setAttribute('transform',`translate(${puff.x},${puff.y})`);
   ssomRot.setAttribute('transform','rotate(0)');
   eyes.innerHTML='<circle cx="-7" cy="-4" r="3.5" fill="#3a2c1c"/><circle cx="7" cy="-4" r="3.5" fill="#3a2c1c"/>';
   mouth.setAttribute('d','M-5 6 Q0 10 5 6');
@@ -134,17 +137,12 @@ svg.addEventListener('pointerdown',e=>{
 svg.addEventListener('pointermove',e=>{
   if(!dragging||state!=='aim')return;
   const [x,y]=evtXY(e);
-  // 당긴 반대 방향으로 발사 (새총처럼). 위로만 쏘게 제한
-  let dx=px-x, dy=py-y;
-  if(dy<5)dy=5; // 아래로는 못 쏨
+  let dx=puff.x-x, dy=puff.y-y;
+  if(dy<5)dy=5;
   const len=Math.min(Math.hypot(dx,dy),90);
-  const ang=Math.atan2(dy,dx);
-  const tx=px+Math.cos(ang)*len, ty=py-Math.sin(ang)*len*-1; // 화살표는 진행방향
-  const ex=px+Math.cos(ang)*len*( -1), ey=py+Math.sin(ang)*( -1)*len;
-  aimLine.setAttribute('x1',px); aimLine.setAttribute('y1',py);
-  aimLine.setAttribute('x2',px+(x-px)*-1); aimLine.setAttribute('y2',py+(y-py)*-1);
+  aimLine.setAttribute('x1',puff.x); aimLine.setAttribute('y1',puff.y);
+  aimLine.setAttribute('x2',puff.x+(x-puff.x)*-1); aimLine.setAttribute('y2',puff.y+(y-puff.y)*-1);
   aimHead.style.display='none';
-  // 파워 표시용 입 모양 (당길수록 긴장)
   const pw=len/90;
   mouth.setAttribute('d',`M-5 ${6+pw*2} Q0 ${10+pw*3} 5 ${6+pw*2}`);
 });
@@ -152,64 +150,49 @@ svg.addEventListener('pointerup',e=>{
   if(!dragging||state!=='aim')return;
   dragging=false; aim.setAttribute('opacity','0');
   const [x,y]=evtXY(e);
-  let dx=px-x, dy=py-y;
+  let dx=puff.x-x, dy=puff.y-y;
   if(dy<5)dy=5;
   const len=Math.min(Math.hypot(dx,dy),90);
-  if(len<12){return;} // 너무 약하면 발사 안함
+  if(len<12){return;}
   const power=len/90;
-  const ang=Math.atan2(dy,dx); // 발사각
-  vx=Math.cos(ang)*power*5.5;
-  vy=-Math.abs(Math.sin(ang))*power*5.5 - power*1.5; // 위로
+  const ang=Math.atan2(dy,dx);
+  puff.vx=Math.cos(ang)*power*5.5;
+  puff.vy=-Math.abs(Math.sin(ang))*power*5.5 - power*1.5;
   state='roll';
   snd(300,.2,'sine',.2,140);
   setMsg('굴러간다!',700);
-}); 
+});
 
 // ── 물리 루프 ──
 function loop(){
   if(state==='roll'){
-    // 1) 머리쪽(진행방향 위)이 무거워 휜다: 속도 방향에 수직으로 살짝 꺾기
-    const sp=Math.hypot(vx,vy);
-    if(sp>0.3){
-      // 휨: 머리(위쪽)가 무거워 왼쪽으로 쏠리는 경향 + 진행방향 기준 곡률
-      const curve=0.018; // 휨 강도
-      const nx=-vy/sp, ny=vx/sp; // 수직벡터
-      vx+=nx*sp*curve; vy+=ny*sp*curve;
-    }
-    // 2) 물컹: 속도에 불규칙 맥동 (들쭉날쭉)
-    const wobble=0.96+Math.sin(performance.now()/90)*0.06+(Math.random()-0.5)*0.04;
-    vx*=wobble; vy*=wobble;
-    // 3) 마찰
-    vx*=0.992; vy*=0.992;
-    px+=vx; py+=vy;
-    // 4) 회전(구르는 느낌) — 속도 비례
-    rot+=sp*1.8;
-    // 물컹 시각화: 진행 중 살짝 찌부 변형
-    const sq=1+Math.sin(performance.now()/80)*0.06;
-    ssomRot.setAttribute('transform',`rotate(${rot}) scale(${sq},${2-sq})`);
-    ssom.setAttribute('transform',`translate(${px},${py})`);
+    // 코어 적분: 휨(curve) + 물컹(wobble) + 마찰(friction) + 이동 + 회전 전부 처리
+    world.integrate(puff);
 
-    // 벽 반사
-    if(px<55){px=55;vx=Math.abs(vx)*0.6;} 
-    if(px>245){px=245;vx=-Math.abs(vx)*0.6;}
-    // 핀 충돌
+    // 물컹 시각화: 구르는 중 찌부 변형
+    const sq=AppPhysics.squash(Math.sin(performance.now()/80)*0.06);
+    ssomRot.setAttribute('transform',`rotate(${puff.rot}) ${sq}`);
+    ssom.setAttribute('transform',`translate(${puff.x},${puff.y})`);
+
+    // 벽 반사 (코어 bounds 사용)
+    world.bounds(puff,{left:55,right:245,e:0.6});
+
+    // 핀 충돌 (코어 hitCircle + absorb 사용)
     pins.forEach(p=>{
       if(p.down)return;
-      if(Math.hypot(px-p.x,py-p.y)<22){
+      if(world.hitCircle(puff,p.x,p.y,2)){
         p.down=true; cleared++; setHud();
         const el=$('pin'+p.id);
         el.animate([{transform:'scale(1)',opacity:1},{transform:`translate(${(Math.random()-.5)*30}px,${-15-Math.random()*15}px) rotate(${(Math.random()-.5)*120}deg) scale(1.1)`,opacity:0}],{duration:400,easing:'ease-out',fill:'forwards'});
         snd(500+Math.random()*200,.12,'triangle',.18);
-        // 충돌 시 속도 약간 흡수
-        vx*=0.82; vy*=0.82;
+        world.absorb(puff,0.82);
       }
     });
 
-    // 정지 또는 화면 위 도달 → 결과
-    if(sp<0.35 || py<30){
+    // 정지 또는 화면 위 도달 → 결과 (코어 isResting 사용)
+    if(world.isResting(puff) || puff.y<30){
       state='celebrate';
       const total=pins.filter(p=>p.down).length;
-      if(py<30 && total<pins.length){ /* 위로 빠져나감 */ }
       celebrate(total);
     }
   }
@@ -217,14 +200,13 @@ function loop(){
 }
 
 function celebrate(total){
-  // 어지러움 세리머니: 눈 핑글 + 머리 휘청
   let t=0;
   const spin=setInterval(()=>{
     t+=1;
     const a=t*40;
     eyes.innerHTML=`<text x="-7" y="-1" font-size="9" fill="#3a2c1c" text-anchor="middle" transform="rotate(${a} -7 -4)">@</text><text x="7" y="-1" font-size="9" fill="#3a2c1c" text-anchor="middle" transform="rotate(${-a} 7 -4)">@</text>`;
-    ssomRot.setAttribute('transform',`rotate(${Math.sin(t/2)*18}) scale(${1+Math.sin(t)*0.05},${1-Math.sin(t)*0.05})`);
-    mouth.setAttribute('d','M-5 8 Q0 4 5 8'); // 어질한 입
+    ssomRot.setAttribute('transform',`rotate(${Math.sin(t/2)*18}) ${AppPhysics.squash(Math.sin(t)*0.05)}`);
+    mouth.setAttribute('d','M-5 8 Q0 4 5 8');
   },60);
   snd(700,.5,'sine',.2,300);
   const allDown = total>=pins.length;

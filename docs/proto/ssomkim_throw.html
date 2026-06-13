@@ -62,6 +62,8 @@
 </div>
 <div id="hint">쏨킴을 <b>당겼다 놓아</b> 발사 → 포물선 그리며 날아가 과녁에 <b>철퍼덕</b><br>물컹해서 날아가는 중에도 살짝 흔들립니다</div>
 
+<!-- 물리 코어 공유: 굴리기/던지기/점프가 같은 모듈을 파라미터만 바꿔 사용 -->
+<script src="../../js/games/physics.js"></script>
 <script>
 const svg=document.getElementById('game');
 const ssom=document.getElementById('ssom'), body=document.getElementById('ssomBody');
@@ -74,31 +76,25 @@ const homeX=60, homeY=232;
 let actx=null;
 function snd(f,d,t='sine',v=.2,to=null){try{if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();const o=actx.createOscillator(),g=actx.createGain();o.type=t;o.frequency.setValueAtTime(f,actx.currentTime);if(to)o.frequency.exponentialRampToValueAtTime(to,actx.currentTime+d);g.gain.setValueAtTime(v,actx.currentTime);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d);o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+d);}catch(e){}}
 
-// 노이즈 버스트 (철퍼덕/찰싹용)
 function noise(dur,v=.25,lp=900){try{if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();const n=actx.sampleRate*dur,b=actx.createBuffer(1,n,actx.sampleRate),ch=b.getChannelData(0);for(let i=0;i<n;i++)ch[i]=(Math.random()*2-1)*(1-i/n);const src=actx.createBufferSource();src.buffer=b;const f=actx.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(lp,actx.currentTime);const g=actx.createGain();g.gain.setValueAtTime(v,actx.currentTime);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+dur);src.connect(f);f.connect(g);g.connect(actx.destination);src.start();}catch(e){}}
 
-// 효과음 세트
-const sfxStretch = ()=>{ snd(180,.18,'sine',.18,420); };           // 늘어남(고무 당기는 느낌)
-const sfxLaunch  = ()=>{ snd(520,.12,'sine',.2,180); noise(.05,.12,2000); }; // 퓽! 발사
-const sfxFly     = ()=>{ snd(700,.5,'sine',.05,500); };            // 휘이익(작게)
-const sfxSplat   = ()=>{ noise(.16,.32,700); snd(140,.16,'sine',.22,70); };  // 철퍼덕(점착)
-const sfxBull    = ()=>{ snd(900,.1);setTimeout(()=>snd(1300,.12),80);setTimeout(()=>snd(1700,.16),170); }; // 정중앙 띠리링
-const sfxMiss    = ()=>{ noise(.2,.3,500); snd(110,.22,'sine',.2,60); };      // 바닥 철퍼덕(둔탁)
+const sfxStretch = ()=>{ snd(180,.18,'sine',.18,420); };
+const sfxLaunch  = ()=>{ snd(520,.12,'sine',.2,180); noise(.05,.12,2000); };
+const sfxFly     = ()=>{ snd(700,.5,'sine',.05,500); };
+const sfxSplat   = ()=>{ noise(.16,.32,700); snd(140,.16,'sine',.22,70); };
+const sfxBull    = ()=>{ snd(900,.1);setTimeout(()=>snd(1300,.12),80);setTimeout(()=>snd(1700,.16),170); };
+const sfxMiss    = ()=>{ noise(.2,.3,500); snd(110,.22,'sine',.2,60); };
 
-// ── BGM (경쾌한 루프, Web Audio 합성. 효과음보다 작게) ──
 let bgmOn=false, bgmTimer=null, bgmStep=0, bgmGain=null;
-// 통통 튀는 메이저 멜로디 (C장조 계열, 8비트 느낌)
 const MELODY=[ 523,0,659,0, 784,659,523,0, 587,0,698,0, 784,0,659,0,
                523,0,659,0, 784,880,784,0, 698,659,587,0, 523,0,0,0 ];
 const BASS=[ 131,131,196,196, 175,175,196,196 ];
 function bgmTick(){
   const t=actx.currentTime;
-  // 멜로디
   const m=MELODY[bgmStep%MELODY.length];
   if(m>0){ const o=actx.createOscillator(),g=actx.createGain(); o.type='square'; o.frequency.value=m;
     g.gain.setValueAtTime(.05,t); g.gain.exponentialRampToValueAtTime(.001,t+.16);
     o.connect(g); g.connect(bgmGain); o.start(t); o.stop(t+.16); }
-  // 베이스 (느리게)
   if(bgmStep%4===0){ const b=BASS[(bgmStep/4)%BASS.length]; const o=actx.createOscillator(),g=actx.createGain();
     o.type='triangle'; o.frequency.value=b; g.gain.setValueAtTime(.06,t); g.gain.exponentialRampToValueAtTime(.001,t+.3);
     o.connect(g); g.connect(bgmGain); o.start(t); o.stop(t+.3); }
@@ -107,14 +103,17 @@ function bgmTick(){
 function startBGM(){
   if(bgmOn)return;
   try{ if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended')actx.resume();
-    bgmGain=actx.createGain(); bgmGain.gain.value=0.5; bgmGain.connect(actx.destination); // 전체 BGM 볼륨(효과음보다 작게)
-    bgmOn=true; bgmStep=0; bgmTimer=setInterval(bgmTick,150); // 템포
+    bgmGain=actx.createGain(); bgmGain.gain.value=0.5; bgmGain.connect(actx.destination);
+    bgmOn=true; bgmStep=0; bgmTimer=setInterval(bgmTick,150);
   }catch(e){}
 }
 
+// 던지기 프리셋으로 코어 월드 생성 — 굴리기/점프와 "동일 코어, 다른 파라미터"
+const world=AppPhysics.createWorld('throw');
+const puff=AppPhysics.createBody({x:homeX,y:homeY,r:22});
+
 let state='aim'; // aim | fly | stick
-let px=homeX,py=homeY,vx=0,vy=0,rot=0,score=0,shots=0;
-const G=0.34; // 중력
+let score=0, shots=0;
 
 function setMsg(t,ms=1400){msg.textContent=t;msg.style.opacity=1;clearTimeout(setMsg._t);setMsg._t=setTimeout(()=>msg.style.opacity=0,ms);}
 function setHud(){hud.textContent=`발사 ${shots}  ·  점수 ${score}`;}
@@ -127,20 +126,18 @@ svg.addEventListener('pointerdown',e=>{ if(state!=='aim')return; e.preventDefaul
 svg.addEventListener('pointermove',e=>{
   if(!dragging||state!=='aim')return;
   const [x,y]=evtXY(e);
-  // 당긴 만큼 늘어나는 시각 효과 (발사대 기준 반대로 늘림)
   let dx=homeX-x, dy=homeY-y;
   const len=Math.min(Math.hypot(dx,dy),70);
   const ang=Math.atan2(dy,dx);
-  // 쏨킴 위치를 당긴 쪽으로 약간 이동 + 늘어남
   const pull=len/70;
-  px=homeX-Math.cos(ang)*len*0.5; py=homeY-Math.sin(ang)*len*0.5;
-  ssom.setAttribute('transform',`translate(${px},${py})`);
-  body.setAttribute('transform',`rotate(${ang*180/Math.PI+90}) scale(${1+pull*0.5},${1-pull*0.25})`);
-  mouth.setAttribute('d',`M-6 ${8+pull*3} Q0 ${5+pull} 6 ${8+pull*3}`); // 긴장한 입
-  // 궤적 미리보기
+  puff.x=homeX-Math.cos(ang)*len*0.5; puff.y=homeY-Math.sin(ang)*len*0.5;
+  ssom.setAttribute('transform',`translate(${puff.x},${puff.y})`);
+  body.setAttribute('transform',`rotate(${ang*180/Math.PI+90}) ${AppPhysics.squash(-pull*0.5)}`);
+  mouth.setAttribute('d',`M-6 ${8+pull*3} Q0 ${5+pull} 6 ${8+pull*3}`);
+  // 궤적 미리보기 (코어 중력 파라미터 사용)
   const pvx=Math.cos(ang)*pull*9, pvy=Math.sin(ang)*pull*9;
-  let tx=px,ty=py,tvx=pvx,tvy=pvy,d='M'+tx+' '+ty;
-  for(let i=0;i<30;i++){tvy+=G;tx+=tvx;ty+=tvy;d+=` L${tx.toFixed(0)} ${ty.toFixed(0)}`;if(ty>H)break;}
+  let tx=puff.x,ty=puff.y,tvx=pvx,tvy=pvy,d='M'+tx+' '+ty;
+  for(let i=0;i<30;i++){tvy+=world.params.gravity;tx+=tvx;ty+=tvy;d+=` L${tx.toFixed(0)} ${ty.toFixed(0)}`;if(ty>H)break;}
   traj.setAttribute('d',d); traj.setAttribute('opacity','.7');
 });
 svg.addEventListener('pointerup',e=>{
@@ -149,9 +146,9 @@ svg.addEventListener('pointerup',e=>{
   let dx=homeX-x, dy=homeY-y;
   const len=Math.min(Math.hypot(dx,dy),70);
   traj.setAttribute('opacity','0');
-  if(len<12){ px=homeX;py=homeY;ssom.setAttribute('transform',`translate(${px},${py})`);body.setAttribute('transform','');mouth.setAttribute('d','M-6 8 Q0 13 6 8');return; }
+  if(len<12){ puff.x=homeX;puff.y=homeY;ssom.setAttribute('transform',`translate(${puff.x},${puff.y})`);body.setAttribute('transform','');mouth.setAttribute('d','M-6 8 Q0 13 6 8');return; }
   const ang=Math.atan2(dy,dx), pull=len/70;
-  vx=Math.cos(ang)*pull*9; vy=Math.sin(ang)*pull*9;
+  puff.vx=Math.cos(ang)*pull*9; puff.vy=Math.sin(ang)*pull*9;
   sfxFly();
   state='fly'; shots++; setHud();
   body.setAttribute('transform','');
@@ -160,8 +157,7 @@ svg.addEventListener('pointerup',e=>{
 
 function stickTo(hitDist){
   state='stick';
-  // 과녁 점착: 물컹 눌러붙는 변형
-  body.animate([{transform:'scale(1,1)'},{transform:'scale(1.5,.6)'},{transform:'scale(1.15,.9)'}],{duration:260,easing:'ease-out',fill:'forwards'});
+  body.animate([{transform:'scale(1,1)'},{transform:AppPhysics.squash(0.5)},{transform:AppPhysics.squash(0.15)}],{duration:260,easing:'ease-out',fill:'forwards'});
 
   let pts;
   if(hitDist<10){pts=100;}
@@ -172,19 +168,18 @@ function stickTo(hitDist){
   sfxSplat();
   if(pts>=100){ setTimeout(sfxBull,180); }
   else if(pts>0){ setTimeout(()=>snd(620,.12),180); }
-  // 눈 어질 (살짝)
   setTimeout(()=>{ eyes.innerHTML=`<text x="-8" y="-1" font-size="9" fill="#3a2c1c" text-anchor="middle">×</text><text x="8" y="-1" font-size="9" fill="#3a2c1c" text-anchor="middle">×</text>`; },200);
-  setTimeout(reset,2000);
+  setTimeout(resetPos,2000);
 }
 function missGround(){
   state='stick';
-  body.animate([{transform:'scale(1,1)'},{transform:'scale(1.6,.4)'}],{duration:200,fill:'forwards'});
+  body.animate([{transform:'scale(1,1)'},{transform:AppPhysics.squash(0.6)}],{duration:200,fill:'forwards'});
   sfxMiss();
-  setTimeout(reset,1700);
+  setTimeout(resetPos,1700);
 }
-function reset(){
-  state='aim'; px=homeX;py=homeY;vx=vy=0;rot=0;
-  ssom.setAttribute('transform',`translate(${px},${py})`);
+function resetPos(){
+  state='aim'; puff.x=homeX;puff.y=homeY;puff.vx=puff.vy=0;puff.rot=0;
+  ssom.setAttribute('transform',`translate(${puff.x},${puff.y})`);
   body.setAttribute('transform',''); body.getAnimations().forEach(a=>a.cancel());
   eyes.innerHTML=`<ellipse cx="-8" cy="-4" rx="6" ry="7" fill="#fff" stroke="#5d4a33" stroke-width="1"/><circle cx="-7" cy="-3" r="3.5" fill="#3a2c1c"/><ellipse cx="8" cy="-4" rx="6" ry="7" fill="#fff" stroke="#5d4a33" stroke-width="1"/><circle cx="9" cy="-3" r="3.5" fill="#3a2c1c"/>`;
   mouth.setAttribute('d','M-6 8 Q0 13 6 8');
@@ -192,24 +187,28 @@ function reset(){
 
 function loop(){
   if(state==='fly'){
-    vy+=G;
-    // 물컹: 비행 중 미세 흔들림 (정확히 안 감)
-    vx+=Math.sin(performance.now()/70)*0.04;
-    vy+=Math.cos(performance.now()/90)*0.03;
-    px+=vx; py+=vy; rot+=Math.hypot(vx,vy)*0.6;
+    // 코어 적분: 중력 + 물컹(wobble) + 이동 + 회전 전부 처리
+    world.integrate(puff);
+
     // 비행 중 늘어진 변형 (속도방향)
-    const ang=Math.atan2(vy,vx);
-    body.setAttribute('transform',`rotate(${ang*180/Math.PI+90}) scale(1.15,.9)`);
-    ssom.setAttribute('transform',`translate(${px},${py})`);
-    // 과녁 충돌
-    const dT=Math.hypot(px-TX,py-TY);
-    if(dT<46){ px=px;py=py; ssom.setAttribute('transform',`translate(${px},${py})`); stickTo(dT); }
+    const ang=Math.atan2(puff.vy,puff.vx);
+    body.setAttribute('transform',`rotate(${ang*180/Math.PI+90}) ${AppPhysics.squash(-0.15)}`);
+    ssom.setAttribute('transform',`translate(${puff.x},${puff.y})`);
+
+    // 과녁 충돌 (코어 hitCircle 사용)
+    if(world.hitCircle(puff,TX,TY,24)){
+      ssom.setAttribute('transform',`translate(${puff.x},${puff.y})`);
+      stickTo(Math.hypot(puff.x-TX,puff.y-TY));
+    }
     // 바닥/화면 밖
-    else if(py>H-10||px>W+30){ if(py>H-10){px=Math.min(px,W);py=H-10;ssom.setAttribute('transform',`translate(${px},${py})`);} missGround(); }
+    else if(puff.y>H-10||puff.x>W+30){
+      if(puff.y>H-10){puff.x=Math.min(puff.x,W);puff.y=H-10;ssom.setAttribute('transform',`translate(${puff.x},${puff.y})`);}
+      missGround();
+    }
   }
   requestAnimationFrame(loop);
 }
-reset(); loop();
+resetPos(); loop();
 </script>
 </body>
 </html>
