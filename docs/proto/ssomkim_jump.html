@@ -89,6 +89,8 @@
 
 <!-- 물리 코어 공유: 굴리기/던지기/점프가 같은 모듈을 파라미터만 바꿔 사용 -->
 <script src="../../js/games/physics.js"></script>
+<!-- 다이내믹 카메라: 줌·히트스톱·셰이크 (물리 불변, viewBox 레이어) -->
+<script src="../../js/games/camera.js"></script>
 <script>
 const svg=document.getElementById('game');
 const ssom=document.getElementById('ssom'), body=document.getElementById('ssomBody');
@@ -119,6 +121,7 @@ const PERFECT_WIN=150;      // 퍼펙트 입력 허용창(ms)
 // 점프 프리셋으로 코어 월드 생성 — 굴리기/던지기와 "동일 코어, 다른 파라미터"
 const world=AppPhysics.createWorld('jump');
 const puff=AppPhysics.createBody({x:150,y:GROUND,r:BODY_R});
+const cam=AppCamera.create(svg,{groundY:GROUND, zoomMin:0.82, zoomMax:1.0, zoomRange:250, zoomLerp:0.06, panStrength:0.35});
 
 let state='ready';          // ready(눌러 충전) | charge | fly
 let comp=0;                 // 현재 압축량
@@ -230,8 +233,8 @@ function launch(power,lean){
 // ── 루프 ──
 function loop(){
   if(state==='fly'){
+    if(!cam.update(puff)){ requestAnimationFrame(loop); return; } // 히트스톱 중 → 렌더 스킵
     world.integrate(puff);
-    // 변형(물컹): 착지 직후 ~200ms는 납작 펄스, 그 외엔 속도방향 늘림(위로 빠를수록 길쭉).
     const sinceImpact=performance.now()-impact;
     if(impact && sinceImpact<200){
       const k=1-sinceImpact/200;            // 1→0 으로 복원(복원은 느리게)
@@ -272,14 +275,15 @@ function loop(){
 
       if(perfect){
         combo++; armed=0;
-        puff.vy=-(landV*0.72 + 7 + combo*1.2); // 에너지 더해 더 높이
+        puff.vy=-(landV*0.72 + 7 + combo*1.2);
         setMsg(combo>1?`퍼펙트 x${combo}!! "날 막을 순 없음"`:'퍼펙트!! 통!',1100);
         sfxPerfect(); faceJoy();
         bestLine.setAttribute('y1',GROUND-maxH); bestLine.setAttribute('y2',GROUND-maxH); bestLine.setAttribute('opacity','.8');
+        cam.hitstop(3); cam.shake(5,160);
       } else {
         combo=0; armed=0;
-        puff.vy=-landV*world.params.restitution; // 보통 반동(감쇠)
-        if(Math.abs(puff.vy)>2.2){ sfxBoing(false); }
+        puff.vy=-landV*world.params.restitution;
+        if(Math.abs(puff.vy)>2.2){ sfxBoing(false); cam.hitstop(2); cam.shake(3,120); }
       }
 
       // 기록 정리
@@ -291,9 +295,12 @@ function loop(){
         body.setAttribute('transform','');
         if(landV>0){ sfxDud(); growKnob(); setMsg(score>0?'"착지 점수도 줘야 하는 거 아님?"':'"...방금 건 연습"',1200); }
         faceNeutral(); setBand(0); render();
+        cam.reset();
         setHud();
       }
     }
+  } else {
+    cam.update(null);
   }
   requestAnimationFrame(loop);
 }
