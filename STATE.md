@@ -2,7 +2,7 @@
 
 > **이 파일의 목적**: 세션이 끊기거나 다른 도구로 넘어갈 때, 이 한 장만 읽으면 즉시 따라잡는다.
 > 새 세션/새 도구에 일을 시킬 땐 항상 이 문장으로 시작: **"STATE.md와 docs/ssomkim.html을 읽고 시작하라."**
-> 최종 수정: 2026-06-13 (미니게임 풍선말 금지 원칙 §2 추가, roll·jump 프로토에서 쏨킴 대사 텍스트 제거)
+> 최종 수정: 2026-06-13 (camera.js: roll·throw에 히트스톱+셰이크 마운트)
 
 ## 0. 단일 진실 소스 (가장 중요)
 
@@ -86,8 +86,8 @@
 
 | 게임 | 물리 특성 | 시점 | 프로토 |
 |---|---|---|---|
-| 굴리기 | 머리쪽 휨 + 물컹 속도(통제 안 되는 주행), 수평 | 탑다운 확정 | ✅ `docs/proto/ssomkim_roll.html` (AppPhysics 코어 마이그레이션 완료) |
-| 던지기 | 늘렸다 발사, 날아가는 게 쏨킴 자신(앵그리버드형 조준), 포물선 | — | ✅ `docs/proto/ssomkim_throw.html` (AppPhysics 코어 마이그레이션 완료) |
+| 굴리기 | 머리쪽 휨 + 물컹 속도(통제 안 되는 주행), 수평 | 탑다운 확정 | ✅ `docs/proto/ssomkim_roll.html` (AppPhysics + AppCamera 히트스톱·셰이크 적용) |
+| 던지기 | 늘렸다 발사, 날아가는 게 쏨킴 자신(앵그리버드형 조준), 포물선 | — | ✅ `docs/proto/ssomkim_throw.html` (AppPhysics + AppCamera 히트스톱·셰이크 적용) |
 | 점프 | 눌렀다 튕겨 오르기(트램펄린/높이), 수직 반동 | 측면 확정 | ✅ `docs/proto/ssomkim_jump.html` (AppPhysics + AppCamera 적용 / 정수리 3종 시그니처·혹 포함) |
 
 ## 5. 도구 현황 (2026-06-13)
@@ -102,7 +102,7 @@
 ## 6. 다음 할 일
 
 1. PR-1 완료 ✓ / verify 브랜치 Close.
-2. **미니게임 물리 3종 마무리**: ① throw·roll 프로토 내용 검토 ✅ ② 점프 프로토 제작 ✅ ③ 물리 코어 `js/games/physics.js` 모듈화 ✅ ④ roll·throw 프로토 코어(AppPhysics) 마이그레이션 ✅ → **완료. 다음: 3종을 `js/games/`에서 같은 쏨킴 인스턴스에 모드로 마운트.**
+2. **미니게임 물리 3종 마무리**: ① throw·roll 프로토 내용 검토 ✅ ② 점프 프로토 제작 ✅ ③ 물리 코어 `js/games/physics.js` 모듈화 ✅ ④ roll·throw 프로토 코어(AppPhysics) 마이그레이션 ✅ ⑤ camera.js: roll·throw에 히트스톱+셰이크 마운트(줌 없음, 코어 불변) ✅ → **완료. 다음: 속도연동 줌(roll)·추적 팬(throw)은 손맛 판정 후 Slice 2. 3종을 `js/games/`에서 같은 쏨킴 인스턴스에 모드로 마운트.**
 3. 대기실 콘텐츠를 reactions.json 카드로 추가 (카탈로그 A·B부터).
 4. 미니게임 소재 = 카탈로그(docs/SSOMKIM_CONTENT_CATALOG.md) 참조.
 5. 상표 출원 (빈둥이 교훈 — 이름 공개됐으니 서두를 것).
