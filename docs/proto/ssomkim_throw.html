@@ -64,6 +64,7 @@
 
 <!-- 물리 코어 공유: 굴리기/던지기/점프가 같은 모듈을 파라미터만 바꿔 사용 -->
 <script src="../../js/games/physics.js"></script>
+<script src="../../js/games/camera.js"></script>
 <script>
 const svg=document.getElementById('game');
 const ssom=document.getElementById('ssom'), body=document.getElementById('ssomBody');
@@ -110,6 +111,7 @@ function startBGM(){
 
 // 던지기 프리셋으로 코어 월드 생성 — 굴리기/점프와 "동일 코어, 다른 파라미터"
 const world=AppPhysics.createWorld('throw');
+const cam=AppCamera.create(svg,{});
 const puff=AppPhysics.createBody({x:homeX,y:homeY,r:22});
 
 let state='aim'; // aim | fly | stick
@@ -174,6 +176,7 @@ function stickTo(hitDist){
 function missGround(){
   state='stick';
   body.animate([{transform:'scale(1,1)'},{transform:AppPhysics.squash(0.6)}],{duration:200,fill:'forwards'});
+  cam.shake(2,100);
   sfxMiss();
   setTimeout(resetPos,1700);
 }
@@ -186,6 +189,7 @@ function resetPos(){
 }
 
 function loop(){
+  if(!cam.update(null)){ requestAnimationFrame(loop); return; }
   if(state==='fly'){
     // 코어 적분: 중력 + 물컹(wobble) + 이동 + 회전 전부 처리
     world.integrate(puff);
@@ -198,6 +202,7 @@ function loop(){
     // 과녁 충돌 (코어 hitCircle 사용)
     if(world.hitCircle(puff,TX,TY,24)){
       ssom.setAttribute('transform',`translate(${puff.x},${puff.y})`);
+      cam.hitstop(3); cam.shake(4,150);
       stickTo(Math.hypot(puff.x-TX,puff.y-TY));
     }
     // 바닥/화면 밖

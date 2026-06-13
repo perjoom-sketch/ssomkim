@@ -69,6 +69,7 @@
 
 <!-- 물리 코어 공유: 굴리기/던지기/점프가 같은 모듈을 파라미터만 바꿔 사용 -->
 <script src="../../js/games/physics.js"></script>
+<script src="../../js/games/camera.js"></script>
 <script>
 const svg=document.getElementById('game');
 const ssom=document.getElementById('ssom');
@@ -87,6 +88,7 @@ const W=300,H=400;
 
 // 굴리기 프리셋으로 코어 월드 생성 — 던지기/점프와 "동일 코어, 다른 파라미터"
 const world=AppPhysics.createWorld('roll');
+const cam=AppCamera.create(svg,{});
 const puff=AppPhysics.createBody({x:150,y:350,r:20});
 
 let state='aim';            // aim | roll | celebrate
@@ -164,6 +166,7 @@ svg.addEventListener('pointerup',e=>{
 
 // ── 물리 루프 ──
 function loop(){
+  if(!cam.update(null)){ requestAnimationFrame(loop); return; }
   if(state==='roll'){
     // 코어 적분: 휨(curve) + 물컹(wobble) + 마찰(friction) + 이동 + 회전 전부 처리
     world.integrate(puff);
@@ -174,7 +177,8 @@ function loop(){
     ssom.setAttribute('transform',`translate(${puff.x},${puff.y})`);
 
     // 벽 반사 (코어 bounds 사용)
-    world.bounds(puff,{left:55,right:245,e:0.6});
+    const hit=world.bounds(puff,{left:55,right:245,e:0.6});
+    if(hit && Math.hypot(puff.vx,puff.vy)>3){ cam.shake(2,90); }
 
     // 핀 충돌 (코어 hitCircle + absorb 사용)
     pins.forEach(p=>{
@@ -185,6 +189,7 @@ function loop(){
         el.animate([{transform:'scale(1)',opacity:1},{transform:`translate(${(Math.random()-.5)*30}px,${-15-Math.random()*15}px) rotate(${(Math.random()-.5)*120}deg) scale(1.1)`,opacity:0}],{duration:400,easing:'ease-out',fill:'forwards'});
         snd(500+Math.random()*200,.12,'triangle',.18);
         world.absorb(puff,0.82);
+        cam.hitstop(2); cam.shake(3,120);
       }
     });
 
@@ -192,6 +197,7 @@ function loop(){
     if(world.isResting(puff) || puff.y<30){
       state='celebrate';
       const total=pins.filter(p=>p.down).length;
+      if(total>=pins.length){ cam.hitstop(3); cam.shake(5,160); }
       celebrate(total);
     }
   }
