@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>쏨킴 점프 (프로토)</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; overflow:hidden; touch-action:none; overscroll-behavior:none; background:#23303f; }
+  body { font-family:-apple-system,'Apple SD Gothic Neo',sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; user-select:none; -webkit-user-select:none; }
+  #wrap { position:relative; width:min(96vw,440px); aspect-ratio:3/4; }
+  #game { width:100%; height:100%; display:block; border-radius:18px; background:linear-gradient(#aee0f2 0%,#cfeaf3 48%,#dff0e0 78%,#cfe2b6 100%); box-shadow:0 12px 40px rgba(0,0,0,.4); }
+  #hud { position:absolute; top:12px; left:0; right:0; text-align:center; color:#36506a; font-weight:800; font-size:15px; pointer-events:none; }
+  #msg { position:absolute; top:42%; left:50%; transform:translate(-50%,-50%); background:#fffdf8; border:3px solid #4a3a2a; border-radius:16px; padding:10px 18px; font-weight:800; font-size:18px; color:#4a3a2a; opacity:0; transition:opacity .2s; pointer-events:none; white-space:nowrap; }
+  #hint { margin-top:14px; color:#cfe0c4; font-size:13px; font-weight:600; text-align:center; line-height:1.5; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <svg id="game" viewBox="0 0 300 400">
+    <defs>
+      <radialGradient id="fur" cx="40%" cy="30%" r="78%">
+        <stop offset="0%" stop-color="#fff"/><stop offset="55%" stop-color="#f4eee4"/>
+        <stop offset="85%" stop-color="#ddd0bd"/><stop offset="100%" stop-color="#c9b9a3"/>
+      </radialGradient>
+      <radialGradient id="knob" cx="40%" cy="35%" r="75%">
+        <stop offset="0%" stop-color="#ffd9cf"/><stop offset="70%" stop-color="#f2b3a4"/><stop offset="100%" stop-color="#d98b7c"/>
+      </radialGradient>
+    </defs>
+
+    <!-- 높이 눈금 (자기기록 가늠) -->
+    <g id="ruler" stroke="#7fa7c0" stroke-width="1.5" opacity=".5" font-size="9" font-weight="700" fill="#5a7d96">
+      <line x1="20" y1="80"  x2="30" y2="80"/><text x="33" y="83">300</text>
+      <line x1="20" y1="160" x2="30" y2="160"/><text x="33" y="163">200</text>
+      <line x1="20" y1="240" x2="30" y2="240"/><text x="33" y="243">100</text>
+    </g>
+
+    <!-- 떠다니는 간식(목표) -->
+    <g id="snacks"></g>
+
+    <!-- 최고높이 마커 -->
+    <line id="best" x1="40" y1="326" x2="260" y2="326" stroke="#e8a23e" stroke-width="2" stroke-dasharray="5 6" opacity="0"/>
+
+    <!-- 조준 화살표(드래그로 살짝 좌우 기울이기) -->
+    <g id="aim" opacity="0">
+      <line id="aimLine" x1="150" y1="300" x2="150" y2="240" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-dasharray="6 6"/>
+      <polygon id="aimHead" points="150,232 144,246 156,246" fill="#fff"/>
+    </g>
+
+    <!-- 트램펄린 -->
+    <g id="tramp">
+      <rect x="58"  y="330" width="9" height="40" rx="3" fill="#6a7d8c"/>
+      <rect x="233" y="330" width="9" height="40" rx="3" fill="#6a7d8c"/>
+      <path id="band" d="M62 330 Q150 330 238 330" stroke="#3a4f63" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <path id="bandHi" d="M62 330 Q150 330 238 330" stroke="#5f7d96" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/>
+    </g>
+
+    <!-- 쏨킴 (정면, 정수리 3종 시그니처: 반창고 좌 · 혹 우 · 바보털 중앙) -->
+    <g id="ssom" transform="translate(150,300)">
+      <g id="ssomBody">
+        <!-- 몸 -->
+        <ellipse cx="0" cy="0" rx="22" ry="24" fill="url(#fur)" stroke="#5d4a33" stroke-width="2"/>
+        <!-- 바보털 (중앙) -->
+        <path d="M0 -24 Q-6 -36 -14 -33 Q-4 -40 4 -28" fill="url(#fur)" stroke="#5d4a33" stroke-width="1.6"/>
+        <!-- 반창고 (좌) -->
+        <g transform="rotate(-18)"><rect x="-22" y="-22" width="16" height="6" rx="3" fill="#e8c9a0" stroke="#d4b288" stroke-width="1"/><line x1="-14" y1="-22" x2="-14" y2="-16" stroke="#d4b288" stroke-width="1"/></g>
+        <!-- 혹 (우) — 괴롭힐수록 부풀어 오르는 시그니처 -->
+        <g id="knobG" transform="translate(12,-20)">
+          <ellipse cx="0" cy="0" rx="7" ry="6" fill="url(#knob)" stroke="#c47e6e" stroke-width="1.4"/>
+          <path d="M-3 -2 Q0 -5 3 -2" stroke="#fff" stroke-width="1.2" fill="none" opacity=".7"/>
+        </g>
+        <!-- 볼터치 -->
+        <ellipse cx="-13" cy="6" rx="6" ry="4" fill="#f3a8a0" opacity=".6"/>
+        <ellipse cx="13" cy="6" rx="6" ry="4" fill="#f3a8a0" opacity=".6"/>
+        <!-- 눈 -->
+        <g id="eyes">
+          <ellipse cx="-8" cy="-4" rx="6" ry="7" fill="#fff" stroke="#5d4a33" stroke-width="1"/><circle id="pL" cx="-7" cy="-3" r="3.5" fill="#3a2c1c"/>
+          <ellipse cx="8" cy="-4" rx="6" ry="7" fill="#fff" stroke="#5d4a33" stroke-width="1"/><circle id="pR" cx="9" cy="-3" r="3.5" fill="#3a2c1c"/>
+        </g>
+        <!-- 입 -->
+        <path id="mouth" d="M-6 8 Q0 13 6 8" stroke="#8a6a4a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </g>
+    </g>
+  </svg>
+  <div id="hud"></div>
+  <div id="msg"></div>
+</div>
+<div id="hint">쏨킴을 <b>꾹 눌러(아래로 드래그)</b> 압축 → 놓으면 <b>튕겨 오릅니다</b><br>착지 순간 <b>탭</b>하면 트램펄린 퍼펙트 반동! 높이 올라가 간식을 먹어요</div>
+
+<!-- 물리 코어 공유: 굴리기/던지기/점프가 같은 모듈을 파라미터만 바꿔 사용 -->
+<script src="../../js/games/physics.js"></script>
+<script>
+const svg=document.getElementById('game');
+const ssom=document.getElementById('ssom'), body=document.getElementById('ssomBody');
+const eyes=document.getElementById('eyes'), mouth=document.getElementById('mouth');
+const knobG=document.getElementById('knobG');
+const band=document.getElementById('band'), bandHi=document.getElementById('bandHi');
+const aim=document.getElementById('aim'), aimLine=document.getElementById('aimLine'), aimHead=document.getElementById('aimHead');
+const snacksG=document.getElementById('snacks'), bestLine=document.getElementById('best');
+const hud=document.getElementById('hud'), msg=document.getElementById('msg');
+const $=id=>document.getElementById(id);
+
+let actx=null;
+function snd(f,d,t='sine',v=.2,to=null){try{if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();const o=actx.createOscillator(),g=actx.createGain();o.type=t;o.frequency.setValueAtTime(f,actx.currentTime);if(to)o.frequency.exponentialRampToValueAtTime(to,actx.currentTime+d);g.gain.setValueAtTime(v,actx.currentTime);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d);o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+d);}catch(e){}}
+
+// 효과음
+const sfxCharge = ()=>snd(220,.14,'sine',.16,140);              // 압축(끼익)
+const sfxBoing  = (hi)=>snd(hi?620:420,.22,'sine',.22,hi?1100:760); // 튕김(보잉)
+const sfxPerfect= ()=>{ snd(880,.1);setTimeout(()=>snd(1320,.12),70);setTimeout(()=>snd(1760,.16),150); }; // 퍼펙트 띠리링
+const sfxEat    = ()=>{ snd(700,.09,'triangle',.2);setTimeout(()=>snd(1050,.1,'triangle',.18),60); };       // 냠
+const sfxDud    = ()=>snd(150,.18,'sine',.2,70);               // 시시한 착지(혹 +)
+
+const W=300,H=400;
+const GROUND=300;            // 쏨킴 중심의 정지 y (트램펄린 위)
+const BODY_R=23;
+const MAX_COMP=34;          // 최대 압축 깊이(px)
+const PERFECT_WIN=150;      // 퍼펙트 입력 허용창(ms)
+
+// 점프 프리셋으로 코어 월드 생성 — 굴리기/던지기와 "동일 코어, 다른 파라미터"
+const world=AppPhysics.createWorld('jump');
+const puff=AppPhysics.createBody({x:150,y:GROUND,r:BODY_R});
+
+let state='ready';          // ready(눌러 충전) | charge | fly
+let comp=0;                 // 현재 압축량
+let maxH=0, bestH=0;        // 이번 점프 최고높이 / 자기기록
+let score=0, knobLv=0;      // 먹은 간식 / 혹 레벨
+let armed=0;                // 퍼펙트 노림 입력 시각
+let impact=0;               // 착지 충격 시각(물컹 펄스 구동)
+let combo=0;                // 연속 퍼펙트
+let snacks=[];
+
+function setMsg(t,ms=1200){msg.textContent=t;msg.style.opacity=1;clearTimeout(setMsg._t);setMsg._t=setTimeout(()=>msg.style.opacity=0,ms);}
+function setHud(){hud.textContent=`간식 ${score}  ·  최고 ${Math.round(bestH)}  ·  혹 ${knobLv}`;}
+
+// 떠다니는 간식 배치(높이별). 위로 갈수록 귀하다.
+function makeSnacks(){
+  snacks=[]; snacksG.innerHTML='';
+  const rows=[{y:250,em:'🍪'},{y:185,em:'🍓'},{y:120,em:'🍡'},{y:65,em:'⭐'}];
+  rows.forEach((r,i)=>{
+    const x=150+(i%2?40:-40)*(i?1:0)+(Math.random()-.5)*30;
+    snacks.push({x,y:r.y,got:false,id:i});
+    const el=document.createElementNS('http://www.w3.org/2000/svg','text');
+    el.setAttribute('id','sn'+i); el.setAttribute('x',x); el.setAttribute('y',r.y);
+    el.setAttribute('font-size','22'); el.setAttribute('text-anchor','middle'); el.setAttribute('dominant-baseline','central');
+    el.textContent=r.em; snacksG.appendChild(el);
+    el.animate([{transform:'translateY(0)'},{transform:'translateY(-5px)'},{transform:'translateY(0)'}],{duration:1800+i*200,iterations:Infinity,easing:'ease-in-out'});
+  });
+}
+
+function setBand(dip){ // dip>0 = 아래로 처짐
+  const y=330+dip;
+  band.setAttribute('d',`M62 330 Q150 ${y} 238 330`);
+  bandHi.setAttribute('d',`M62 330 Q150 ${y} 238 330`);
+}
+function render(){
+  ssom.setAttribute('transform',`translate(${puff.x.toFixed(1)},${puff.y.toFixed(1)})`);
+}
+function faceNeutral(){
+  eyes.innerHTML=`<ellipse cx="-8" cy="-4" rx="6" ry="7" fill="#fff" stroke="#5d4a33" stroke-width="1"/><circle cx="-7" cy="-3" r="3.5" fill="#3a2c1c"/><ellipse cx="8" cy="-4" rx="6" ry="7" fill="#fff" stroke="#5d4a33" stroke-width="1"/><circle cx="9" cy="-3" r="3.5" fill="#3a2c1c"/>`;
+  mouth.setAttribute('d','M-6 8 Q0 13 6 8');
+}
+function faceDizzy(){ eyes.innerHTML=`<text x="-8" y="-1" font-size="9" fill="#3a2c1c" text-anchor="middle">@</text><text x="8" y="-1" font-size="9" fill="#3a2c1c" text-anchor="middle">@</text>`; mouth.setAttribute('d','M-5 9 Q0 5 5 9'); }
+function faceJoy(){ mouth.setAttribute('d','M-7 7 Q0 15 7 7'); }
+
+// 혹은 레벨 따라 부풀어 오른다(괴롭힘/실패 누적). 가끔 쉬면 가라앉힘은 생략(프로토).
+function growKnob(){
+  knobLv++;
+  const s=1+Math.min(knobLv,5)*0.22;
+  knobG.animate([{transform:`translate(12px,-20px) scale(1)`},{transform:`translate(12px,-20px) scale(${s*1.15})`},{transform:`translate(12px,-20px) scale(${s})`}],{duration:420,easing:'cubic-bezier(.3,1.4,.5,1)',fill:'forwards'});
+  setHud();
+}
+
+function reset(full){
+  state='ready'; comp=0; maxH=0; armed=0;
+  puff.x=150; puff.y=GROUND; puff.vx=0; puff.vy=0; puff.rot=0;
+  body.setAttribute('transform','');
+  setBand(0); faceNeutral(); bestLine.setAttribute('opacity','0');
+  if(full){ makeSnacks(); }
+  render(); setHud();
+}
+
+// ── 입력 ──
+function evtXY(e){const r=svg.getBoundingClientRect();return [((e.touches?e.touches[0].clientX:e.clientX)-r.left)/r.width*W, ((e.touches?e.touches[0].clientY:e.clientY)-r.top)/r.height*H];}
+let dragStartY=0, dragX=0;
+
+svg.addEventListener('pointerdown',e=>{
+  e.preventDefault();
+  if(state==='ready'){
+    state='charge'; [dragX,dragStartY]=evtXY(e); aim.setAttribute('opacity','1'); faceNeutral();
+  } else if(state==='fly'){
+    armed=performance.now(); // 착지 퍼펙트 노림
+  }
+});
+svg.addEventListener('pointermove',e=>{
+  if(state!=='charge')return;
+  const [x,y]=evtXY(e);
+  comp=Math.max(0,Math.min(MAX_COMP,(y-dragStartY)));
+  dragX=x;
+  const pw=comp/MAX_COMP;
+  // 압축 시각화: 몸 납작 + 트램펄린 처짐 + 살짝 가라앉기
+  puff.y=GROUND+comp*0.5;
+  body.setAttribute('transform',AppPhysics.squash(pw*0.5));
+  setBand(comp);
+  mouth.setAttribute('d',`M-6 ${8+pw*3} Q0 ${5-pw*2} 6 ${8+pw*3}`); // 힘주는 입
+  // 조준: 좌우 기울기(살짝만)
+  const lean=Math.max(-1,Math.min(1,(x-150)/90));
+  aimLine.setAttribute('x2',150+lean*40); aimHead.setAttribute('points',`${150+lean*40},232 ${144+lean*40},246 ${156+lean*40},246`);
+  render();
+  if(pw>0.05 && !sfxCharge._p){ sfxCharge._p=1; sfxCharge(); }
+});
+svg.addEventListener('pointerup',e=>{
+  if(state!=='charge')return;
+  aim.setAttribute('opacity','0'); sfxCharge._p=0;
+  const pw=comp/MAX_COMP;
+  if(pw<0.08){ // 너무 약하면 도로 앉기
+    reset(false); return;
+  }
+  const lean=Math.max(-1,Math.min(1,(dragX-150)/90));
+  launch(pw,lean);
+});
+
+function launch(power,lean){
+  state='fly';
+  puff.y=GROUND; puff.vy=-(2+power*14); puff.vx=lean*power*3.2;
+  comp=0; setBand(0); impact=0;
+  // 발사 직후 위로 빠른 속도 → 루프의 속도기반 변형이 길쭉하게(stretch) 늘려준다.
+  faceJoy(); sfxBoing(power>0.7);
+}
+
+// ── 루프 ──
+function loop(){
+  if(state==='fly'){
+    world.integrate(puff);
+    // 변형(물컹): 착지 직후 ~200ms는 납작 펄스, 그 외엔 속도방향 늘림(위로 빠를수록 길쭉).
+    const sinceImpact=performance.now()-impact;
+    if(impact && sinceImpact<200){
+      const k=1-sinceImpact/200;            // 1→0 으로 복원(복원은 느리게)
+      body.setAttribute('transform',AppPhysics.squash(0.45*k));
+      setBand(22*k);
+    } else {
+      const stretch=Math.max(-0.28,Math.min(0.28,-puff.vy*0.02));
+      body.setAttribute('transform',`rotate(${puff.vx*1.5}) ${AppPhysics.squash(stretch)}`);
+      if(impact) setBand(0);
+    }
+    render();
+
+    // 최고높이 갱신(자기기록)
+    const h=GROUND-puff.y;
+    if(h>maxH)maxH=h;
+
+    // 좌우 벽
+    world.bounds(puff,{left:34,right:266,e:0.5});
+
+    // 간식 먹기
+    snacks.forEach(s=>{
+      if(s.got)return;
+      if(world.hitCircle(puff,s.x,s.y,16)){
+        s.got=true; score++; setHud(); sfxEat();
+        const el=$('sn'+s.id);
+        el.animate([{transform:'scale(1)',opacity:1},{transform:'scale(1.8)',opacity:0}],{duration:300,fill:'forwards'});
+        if(snacks.every(n=>n.got)){ setMsg('전부 냠! "이 정도야 뭐"',1500); setTimeout(()=>makeSnacks(),900); }
+      }
+    });
+
+    // 착지(트램펄린) — 코어 bounds로 바닥 반사, 단 퍼펙트 타이밍 보너스
+    if(puff.y>=GROUND && puff.vy>0){
+      const now=performance.now();
+      const perfect=armed && (now-armed)<PERFECT_WIN;
+      puff.y=GROUND;
+      const landV=puff.vy;
+      impact=now; // 착지 물컹 + 트램펄린 처짐 펄스(루프가 구동)
+
+      if(perfect){
+        combo++; armed=0;
+        puff.vy=-(landV*0.72 + 7 + combo*1.2); // 에너지 더해 더 높이
+        setMsg(combo>1?`퍼펙트 x${combo}!! "날 막을 순 없음"`:'퍼펙트!! 통!',1100);
+        sfxPerfect(); faceJoy();
+        bestLine.setAttribute('y1',GROUND-maxH); bestLine.setAttribute('y2',GROUND-maxH); bestLine.setAttribute('opacity','.8');
+      } else {
+        combo=0; armed=0;
+        puff.vy=-landV*world.params.restitution; // 보통 반동(감쇠)
+        if(Math.abs(puff.vy)>2.2){ sfxBoing(false); }
+      }
+
+      // 기록 정리
+      if(maxH>bestH){ bestH=maxH; }
+      maxH=0;
+      // 다 식었으면 정지 → 시시한 착지로 혹 +1, ready 복귀
+      if(Math.abs(puff.vy)<2.2){
+        puff.vy=0; puff.vx*=0.3; state='ready';
+        body.setAttribute('transform','');
+        if(landV>0){ sfxDud(); growKnob(); setMsg(score>0?'"착지 점수도 줘야 하는 거 아님?"':'"...방금 건 연습"',1200); }
+        faceNeutral(); setBand(0); render();
+        setHud();
+      }
+    }
+  }
+  requestAnimationFrame(loop);
+}
+
+reset(true); loop();
+</script>
+</body>
+</html>
