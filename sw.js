@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pet-v3';
+const CACHE_NAME = 'pet-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -32,6 +32,8 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) return;
   event.respondWith(
-    caches.match(event.request).then(response => response || caches.match('./index.html'))
+    caches.match(event.request).then(cached =>
+      cached || fetch(event.request).catch(() => caches.match('./index.html'))
+    )
   );
 });
