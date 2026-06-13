@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>쏨킴 - 비주얼 리마스터 에디션</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; overflow:hidden; touch-action:manipulation; overscroll-behavior:none; }
+  body {
+    background: radial-gradient(circle at 50% 40%, #eef5ec 0%, #d2ded0 50%, #b2c4b0 100%);
+    font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    user-select:none; -webkit-user-select:none;
+  }
+  #stage { position:relative; width:min(88vw, 480px); touch-action:none; }
+  #ssomkim { width:100%; cursor:pointer; touch-action:none; filter: drop-shadow(0 10px 20px rgba(93,74,51,0.12)); }
+  #rig { transform-box: view-box; transform-origin: 50% 90%; will-change: transform; transition: transform .1s ease-out; }
+  #ssomkim.squash #rig { animation: squash .45s; }
+  #ssomkim.shake  #rig { animation: shake .4s; }
+  #ssomkim.jump   #rig { animation: jump .55s; }
+  #ssomkim.wobble #rig { animation: wobble 1.5s; }
+  #ssomkim.tremble #rig { animation: tremble .1s infinite; }
+  @keyframes tremble { 0%,100%{transform:translateX(0) rotate(0)} 50%{transform:translateX(3px) rotate(.6deg)} }
+  @keyframes squash { 0%{transform:scale(1,1)} 18%{transform:scale(1.26,.72)} 55%{transform:scale(.94,1.08)} 78%{transform:scale(1.03,.98)} 100%{transform:scale(1,1)} }
+  @keyframes shake  { 0%,100%{transform:rotate(0)} 15%{transform:rotate(-4.5deg)} 55%{transform:rotate(3.5deg)} 80%{transform:rotate(-1.5deg)} }
+  @keyframes jump   { 0%,100%{transform:translateY(0) scale(1,1)} 22%{transform:translateY(-42px) scale(.92,1.12)} 58%{transform:translateY(0) scale(1.16,.84)} 80%{transform:translateY(-6px) scale(.99,1.01)} }
+  @keyframes wobble { 0%,100%{transform:rotate(0)} 20%{transform:rotate(-6deg)} 40%{transform:rotate(5deg)} 60%{transform:rotate(-3deg)} 80%{transform:rotate(2deg)} }
+  #speech {
+    position:absolute; top:-25px; left:50%; transform:translateX(-50%);
+    background: linear-gradient(135deg, #ffffff 0%, #fffdf4 100%); border:3px solid #4a3a2a; border-radius:20px;
+    padding:10px 20px; font-size:19px; font-weight:800; color:#4a3a2a;
+    opacity:0; transition:opacity .15s, transform .15s; white-space:nowrap; pointer-events:none; z-index:5;
+    box-shadow: 0 8px 0 rgba(74,58,42,0.12), 0 15px 20px rgba(0,0,0,0.05);
+  }
+  #speech::after {
+    content:''; position:absolute; bottom:-12px; left:50%; transform:translateX(-50%);
+    border:8px solid transparent; border-top:10px solid #4a3a2a;
+  }
+  #hint { margin-top:16px; color:#55675a; font-size:14px; font-weight:600; opacity:.85; text-align:center; line-height:1.6; }
+  .fluff { position:absolute; pointer-events:none; font-size:22px; will-change:transform,opacity; z-index:4; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="speech"></div>
+  <svg id="ssomkim" viewBox="0 0 300 300">
+    <defs>
+      <!-- 극강의 말랑 3D 질감을 위한 멀티 하이라이팅 그라데이션 -->
+      <radialGradient id="fur" cx="35%" cy="28%" r="75%">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="25%" stop-color="#fcfaf4"/>
+        <stop offset="60%" stop-color="#f2e9dc"/>
+        <stop offset="88%" stop-color="#decfa7"/>
+        <stop offset="100%" stop-color="#c4b387"/>
+      </radialGradient>
+      <radialGradient id="furBack" cx="50%" cy="30%" r="75%">
+        <stop offset="0%" stop-color="#faf6ee"/>
+        <stop offset="65%" stop-color="#e8dcbf"/>
+        <stop offset="100%" stop-color="#bead83"/>
+      </radialGradient>
+      <!-- 눈동자 스펙트럼 입체 그라데이션 -->
+      <linearGradient id="pupilGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#2b1f14"/>
+        <stop offset="100%" stop-color="#4a3928"/>
+      </linearGradient>
+      <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="2"/>
+      </filter>
+      <filter id="shadowBlur">
+        <feGaussianBlur stdDeviation="3"/>
+      </filter>
+    </defs>
+
+    <!-- 바닥 고정 가변 그림자 -->
+    <ellipse id="shadow" cx="150" cy="278" rx="88" ry="13" fill="rgba(43,59,47,.26)" filter="url(#shadowBlur)" style="transition: all 0.15s ease-out; transform-origin: 150px 278px;"/>
+
+    <!-- 몸 리그 -->
+    <g id="rig">
+    <!-- ===== 정면 ===== -->
+    <g id="front">
+      <!-- 정수리 바보털 (Ahoge) - 디테일 업 -->
+      <path id="hair" d="M150 34 Q142 12 128 16 Q140 6 154 28" fill="url(#fur)" stroke="#5d4a33" stroke-width="1.8" stroke-linejoin="round" style="transform-origin: 150px 34px; transition: transform 0.1s;"/>
+      
+      <!-- 몸통 (메인 볼륨) -->
+      <path id="body" d="M172 26 C 112 20, 70 66, 66 132 C 46 196, 66 262, 116 270 C 132 274, 138 258, 150 258 C 162 258, 168 274, 184 270 C 226 264, 245 214, 244 158 C 246 84, 224 32, 172 26 Z" fill="url(#fur)" stroke="#5d4a33" stroke-width="2" stroke-linejoin="round"/>
+      
+      <!-- 혹 (괴롭힘의 역사) — 정수리 우측 윤곽 위로 솟음 -->
+      <g id="bump">
+        <ellipse cx="206" cy="34" rx="15" ry="13" fill="url(#fur)" stroke="#5d4a33" stroke-width="1.6"/>
+        <ellipse cx="202" cy="30" rx="5" ry="3.5" fill="#ffffff" opacity=".5" filter="url(#soft)"/>
+        <path d="M199 28 Q206 23 213 28" stroke="#e88" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".55"/>
+      </g>
+      <!-- 입체 광택 레이어 (엔젤링) -->
+      <ellipse cx="135" cy="62" rx="42" ry="24" fill="#ffffff" opacity=".45" filter="url(#soft)" transform="rotate(-14 135 62)"/>
+      <ellipse id="bellyShade" cx="144" cy="234" rx="60" ry="24" fill="#baa478" opacity=".45" filter="url(#soft)"/>
+
+      <!-- 말랑한 팔 (명암 추가) -->
+      <ellipse id="armL" cx="54"  cy="192" rx="16" ry="28" fill="url(#fur)" stroke="#5d4a33" stroke-width="1.6" transform="rotate(18 54 192)"/>
+      <ellipse id="armR" cx="246" cy="192" rx="16" ry="28" fill="url(#fur)" stroke="#5d4a33" stroke-width="1.6" transform="rotate(-18 246 192)"/>
+      
+      <!-- 오동통한 발 -->
+      <ellipse id="footL" cx="110" cy="265" rx="21" ry="14" fill="#f5f0e6" stroke="#5d4a33" stroke-width="1.6"/>
+      <ellipse id="footR" cx="190" cy="265" rx="21" ry="14" fill="#f5f0e6" stroke="#5d4a33" stroke-width="1.6"/>
+
+      <!-- 부드러운 과즙 볼터치 -->
+      <ellipse id="blushL" cx="90"  cy="158" rx="24" ry="17" fill="#ff9285" opacity=".65" filter="url(#soft)"/>
+      <ellipse id="blushR" cx="210" cy="158" rx="24" ry="17" fill="#ff9285" opacity=".65" filter="url(#soft)"/>
+      <circle cx="84" cy="154" r="3" fill="#fff" opacity=".4" filter="url(#soft)"/>
+      <circle cx="204" cy="154" r="3" fill="#fff" opacity=".4" filter="url(#soft)"/>
+
+      <!-- 입체적 감정 눈썹 -->
+      <path id="browL" d="M84 108 Q102 98 120 108" stroke="#544129" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+      <path id="browR" d="M180 108 Q198 98 216 108" stroke="#544129" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+
+      <!-- 깊이감 넘치는 눈 (초롱초롱 멀티 하이라이트) -->
+      <g id="eyeLg">
+        <ellipse id="eyeWL" cx="104" cy="134" rx="21" ry="18" fill="#fff" stroke="#5d4a33" stroke-width="1.2"/>
+        <g id="pupilLg">
+          <circle id="eyeL"  cx="108" cy="136" r="13" fill="url(#pupilGrad)"/>
+          <circle cx="113" cy="131" r="4.5" fill="#fff"/>
+          <circle cx="104" cy="141" r="2" fill="#fff" opacity=".6"/>
+        </g>
+        <ellipse id="lidL" cx="104" cy="122" rx="23" ry="9" fill="url(#fur)"/>
+        <ellipse id="tearL" cx="92" cy="148" rx="0" ry="0" fill="#a6e3ff" opacity=".95"/>
+      </g>
+      <g id="eyeRg">
+        <ellipse id="eyeWR" cx="196" cy="134" rx="21" ry="18" fill="#fff" stroke="#5d4a33" stroke-width="1.2"/>
+        <g id="pupilRg">
+          <circle id="eyeR"  cx="192" cy="136" r="13" fill="url(#pupilGrad)"/>
+          <circle cx="197" cy="131" r="4.5" fill="#fff"/>
+          <circle cx="188" cy="141" r="2" fill="#fff" opacity=".6"/>
+        </g>
+        <ellipse id="lidR" cx="196" cy="122" rx="23" ry="9" fill="url(#fur)"/>
+        <ellipse id="tearR" cx="208" cy="148" rx="0" ry="0" fill="#a6e3ff" opacity=".95"/>
+      </g>
+
+      <!-- 입 (경계선 디테일화) -->
+      <path id="mouth" d="M134 172 Q150 184 166 172" stroke="#78593a" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+
+      <!-- 리얼 분노 스팀 효과 -->
+      <g id="steam" opacity="0">
+        <path d="M58 48 q-8 -12 0 -24 q8 -12 0 -20" stroke="#d5c0a3" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M242 48 q8 -12 0 -24 q-8 -12 0 -20" stroke="#d5c0a3" stroke-width="5" fill="none" stroke-linecap="round"/>
+      </g>
+    </g>
+
+    <!-- ===== 등 (삐짐 레이어 명암 강화) ===== -->
+    <g id="back" opacity="0">
+      <path d="M172 26 C 112 20, 70 66, 66 132 C 46 196, 66 262, 116 270 C 132 274, 138 258, 150 258 C 162 258, 168 274, 184 270 C 226 264, 245 214, 244 158 C 246 84, 224 32, 172 26 Z" fill="url(#furBack)" stroke="#5d4a33" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M150 140 C 145 190, 145 224, 150 252" stroke="#ccbea6" stroke-width="4.5" fill="none" stroke-linecap="round" opacity=".8"/>
+      <!-- 오동통 엉덩이 볼터치 빔 -->
+      <ellipse cx="112" cy="224" rx="26" ry="18" fill="#ff9b94" opacity=".45" filter="url(#soft)" transform="rotate(14 112 224)"/>
+      <ellipse cx="188" cy="224" rx="26" ry="18" fill="#ff9b94" opacity=".45" filter="url(#soft)" transform="rotate(-14 188 224)"/>
+      <ellipse cx="110" cy="265" rx="21" ry="14" fill="#f5f0e6" stroke="#5d4a33" stroke-width="1.6"/>
+      <ellipse cx="190" cy="265" rx="21" ry="14" fill="#f5f0e6" stroke="#5d4a33" stroke-width="1.6"/>
+    </g>
+
+    <!-- 시그니처 입체 반창고 (그림자 이펙트 추가) -->
+    <g id="bandaid" transform="translate(24,8) rotate(-22 105 62)" filter="drop-shadow(0 4px 5px rgba(0,0,0,0.08))">
+      <rect x="60" y="48" width="88" height="28" rx="14" fill="#ebbfa2" stroke="#cfa282" stroke-width="1.5"/>
+      <rect x="88" y="52" width="32" height="20" rx="4" fill="#f7e5cb"/>
+      <g fill="#ba9272">
+        <circle cx="71" cy="56" r="1.6"/><circle cx="79" cy="62" r="1.6"/><circle cx="71" cy="68" r="1.6"/>
+        <circle cx="137" cy="56" r="1.6"/><circle cx="129" cy="62" r="1.6"/><circle cx="137" cy="68" r="1.6"/>
+      </g>
+    </g>
+
+    <!-- 하트 이펙트 -->
+    <g id="hearts" opacity="0" fill="#ff7373">
+      <path d="M58 90 c-5-8-18-4-16 5 c1 6 10 11 16 15 c6-4 15-9 16-15 c2-9-11-13-16-5z"/>
+      <path d="M242 78 c-4-7-15-3-13 4 c1 5 8 9 13 12 c5-3 12-7 13-12 c2-7-9-11-13-4z"/>
+    </g>
+    </g><!-- /rig -->
+  </svg>
+</div>
+<div id="hint">👆 탭: 찌르기(콤보!) | ✊ 길게: 누르기 | 💨 휙: 밀기<br>🖐️ 정수리 비비기: 쓰다듬기 | ↔️ 몸통 비비기: 간지럼</div>
+
+<script>
+const ssomkim = document.getElementById('ssomkim');
+const rig = document.getElementById('rig');
+const speech = document.getElementById('speech');
+const stage = document.getElementById('stage');
+const hint = document.getElementById('hint');
+const shadow = document.getElementById('shadow');
+const hair = document.getElementById('hair');
+const $ = id => document.getElementById(id);
+
+let gauge = 0, state = 'calm', combo = 0;
+let pressTimer = null, pressed = false, sulkTimer = null, comboTimer = null;
+let actx = null;
+
+function snd(freq, dur, type='sine', vol=.22, slideTo=null) {
+  try {
+    if (!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, actx.currentTime);
+    if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, actx.currentTime+dur);
+    g.gain.setValueAtTime(vol, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001, actx.currentTime+dur);
+    o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime+dur);
+  } catch(e){}
+}
+
+const kyu = (pitchShift=0)=>{ snd(560+pitchShift,.16,'sine',.22,880+pitchShift); };
+const boing = ()=>{ snd(220,.18,'sine',.25,160); };
+const grr = ()=>{ snd(160,.22,'sawtooth',.12,120); };
+const sparkle = ()=>{ snd(900,.1); setTimeout(()=>snd(1200,.12),90); setTimeout(()=>snd(1500,.18),190); };
+const giggle = ()=>{ [0,90,180,280,380].forEach((t,i)=>setTimeout(()=>snd(520+i*110,.09,'sine',.2,640+i*110),t)); };
+const purr = ()=>{ snd(280,.12,'triangle',.15,240); setTimeout(()=>snd(300,.12,'triangle',.15,260),80); };
+
+function say(t, ms=750){ 
+  speech.textContent=t; speech.style.opacity=1;
+  speech.style.transform = `translateX(-50%) scale(${1 + Math.min(combo*0.06, 0.28)})`;
+  clearTimeout(say._t); say._t=setTimeout(()=>{ speech.style.opacity=0; speech.style.transform='translateX(-50%) scale(1)'; },ms); 
+}
+
+function fluffs(n,x,y,types=['☁️']){
+  for(let i=0;i<n;i++){
+    const f=document.createElement('div'); f.className='fluff'; 
+    f.textContent=types[Math.floor(Math.random()*types.length)]; 
+    f.style.left=x+'px'; f.style.top=y+'px'; stage.appendChild(f);
+    const a=Math.random()*Math.PI*2,d=40+Math.random()*80;
+    f.animate([{transform:'translate(0,0) scale(.5)',opacity:1},
+      {transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d-50}px) scale(1.4)`,opacity:0}],
+      {duration:600+Math.random()*400,easing:'ease-out'}).onfinish=()=>f.remove();
+  }
+}
+
+// ── 아이 트래킹 및 바보털 실시간 물리 연동 ──
+window.addEventListener('pointermove', e => {
+  if (state === 'sulking' || fallen) return; 
+  const rect = ssomkim.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const dx = e.clientX - cx, dy = e.clientY - cy;
+  const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+  
+  const maxMove = state === 'angry' ? 1.5 : 5;
+  const mx = (dx / dist) * maxMove;
+  const my = (dy / dist) * maxMove;
+
+  const f = state === 'angry' ? -1 : 1;
+  $('pupilLg').style.transform = `translate(${mx*f}px, ${my*f}px)`;
+  $('pupilRg').style.transform = `translate(${mx*f}px, ${my*f}px)`;
+
+  // 바보털 각도 반응 (뽑힌 동안은 제외)
+  if(!hairDetached){
+    const hairAngle = Math.max(-25, Math.min(25, (dx / rect.width) * 35));
+    hair.style.transform = `rotate(${hairAngle}deg)`;
+  }
+});
+
+function updateShadow(scale, opacity, rotate=0) {
+  shadow.style.transform = `scale(${scale}) rotate(${rotate}deg)`;
+  shadow.style.opacity = opacity;
+}
+
+// ── 표정 설계 마스터 ──
+const BODY_SOFT = "M172 26 C 112 20, 70 66, 66 132 C 46 196, 66 262, 116 270 C 132 274, 138 258, 150 258 C 162 258, 168 274, 184 270 C 226 264, 245 214, 244 158 C 246 84, 224 32, 172 26 Z";
+const BODY_BUFF = "M150 30 C 96 30, 56 50, 50 92 C 46 128, 88 198, 114 260 C 122 274, 134 268, 150 268 C 166 268, 178 274, 186 260 C 212 198, 254 128, 250 92 C 244 50, 204 30, 150 30 Z";
+function setBuff(on){
+  $('body').setAttribute('d', on? BODY_BUFF : BODY_SOFT);
+  $('bellyShade').setAttribute('opacity', on? 0 : .45);
+  $('armL').setAttribute('cx', on?60:54);  $('armL').setAttribute('cy', on?110:192);
+  $('armL').setAttribute('rx', on?25:16);  $('armL').setAttribute('ry', on?34:28);
+  $('armL').setAttribute('transform', on?'rotate(-24 60 110)':'rotate(18 54 192)');
+  $('armR').setAttribute('cx', on?240:246); $('armR').setAttribute('cy', on?110:192);
+  $('armR').setAttribute('rx', on?24:16);  $('armR').setAttribute('ry', on?34:28);
+  $('armR').setAttribute('transform', on?'rotate(24 240 110)':'rotate(-18 246 192)');
+  $('footL').setAttribute('cx', on?126:110); $('footR').setAttribute('cx', on?174:190);
+}
+function faceSmug(){
+  $('lidL').setAttribute('ry',9); $('lidR').setAttribute('ry',9);
+  $('browL').setAttribute('d','M84 108 Q102 98 120 108'); $('browR').setAttribute('d','M180 108 Q198 98 216 108');
+  $('mouth').setAttribute('d','M134 172 Q150 184 166 172');
+  $('steam').setAttribute('opacity',0); $('hearts').setAttribute('opacity',0);
+  setTears(0); setBodyColor(false); setBuff(false);
+}
+function faceAnnoyed(){
+  setBuff(false);
+  $('lidL').setAttribute('ry',12); $('lidR').setAttribute('ry',12);
+  $('browL').setAttribute('d','M84 102 Q102 110 120 114'); $('browR').setAttribute('d','M180 114 Q198 110 216 102');
+  $('mouth').setAttribute('d','M138 178 Q150 172 162 178');
+}
+function faceAngry(){
+  $('lidL').setAttribute('ry',2); $('lidR').setAttribute('ry',2);
+  $('browL').setAttribute('d','M84 98 Q104 112 122 118'); $('browR').setAttribute('d','M178 118 Q196 112 216 98');
+  $('mouth').setAttribute('d','M132 182 Q150 170 168 182');
+  $('steam').setAttribute('opacity',1); setBodyColor(true); setBuff(true);
+  ssomkim.classList.remove('jump'); void ssomkim.offsetWidth; ssomkim.classList.add('jump');
+  updateShadow(0.6, 0.1); setTimeout(()=>updateShadow(1, 0.26), 550);
+  snd(120,.3,'sawtooth',.18,90);
+}
+function faceTeary(){
+  $('lidL').setAttribute('ry',2); $('lidR').setAttribute('ry',2);
+  $('browL').setAttribute('d','M86 104 Q102 96 118 102'); $('browR').setAttribute('d','M182 102 Q198 96 214 104');
+  $('mouth').setAttribute('d','M140 180 Q150 174 160 180'); setTears(1);
+}
+function faceHappy(){
+  setBuff(false);
+  $('lidL').setAttribute('ry',2); $('lidR').setAttribute('ry',2);
+  $('browL').setAttribute('d','M84 106 Q102 98 120 104'); $('browR').setAttribute('d','M180 104 Q198 98 216 106');
+  $('mouth').setAttribute('d','M132 170 Q150 188 168 170');
+  $('hearts').setAttribute('opacity',1); setTears(0); setBodyColor(false);
+}
+function faceHoldLaugh(){ 
+  $('lidL').setAttribute('ry',13); $('lidR').setAttribute('ry',13);
+  $('mouth').setAttribute('d','M140 176 Q150 170 160 176');
+  $('blushL').setAttribute('opacity',1); $('blushR').setAttribute('opacity',1);
+}
+function faceLaugh(){ 
+  $('lidL').setAttribute('ry',22); $('lidR').setAttribute('ry',22);
+  $('browL').setAttribute('d','M86 130 Q104 118 122 130'); $('browR').setAttribute('d','M178 130 Q196 118 214 130');
+  $('mouth').setAttribute('d','M128 166 Q150 198 172 166');
+}
+function setTears(on){ ['tearL','tearR'].forEach(id=>{ $(id).setAttribute('rx',on?5.5:0); $(id).setAttribute('ry',on?7.5:0); }); }
+function setBodyColor(red){
+  $('body').setAttribute('fill', red? '#eea58a' : 'url(#fur)');
+  $('blushL').setAttribute('opacity', red? .95 : .65); $('blushR').setAttribute('opacity', red? .95 : .65);
+}
+function showBack(on){
+  $('front').setAttribute('opacity', on?0:1); $('back').setAttribute('opacity', on?1:0);
+  $('bandaid').setAttribute('transform', on ? 'translate(300,0) scale(-1,1) translate(24,8) rotate(-22 105 62)' : 'translate(24,8) rotate(-22 105 62)');
+  if(on) { $('pupilLg').style.transform=''; $('pupilRg').style.transform=''; hair.style.transform=''; }
+}
+
+// ── 핵심 로직 및 인터랙션 제어 ──
+function setState(s){
+  if(state===s) return; state=s;
+  if(s==='calm'){ showBack(false); faceSmug(); combo=0; }
+  if(s==='annoyed'){ faceAnnoyed(); }
+  if(s==='angry'){ faceAngry(); say('작작 찔러라 즌짜..💢',1000); }
+  if(s==='sulking'){ if(hairDetached) reattachHair(); showBack(true); say('흥! 절교다 절교.',1000); grr(); sulkTimer = setTimeout(reconcile, 10000); }
+  if(s==='reconcile'){ showBack(false); faceTeary();
+    setTimeout(()=>{ faceHappy(); sparkle(); say('..흥! 딱히 용서해주는 건 아님💢',1600);
+      ssomkim.classList.add('wobble'); setTimeout(()=>{ gauge=0; setState('calm'); },2200);
+    },1400);
+  }
+}
+function reconcile(){ setState('reconcile'); }
+
+function addGauge(n){
+  gauge=Math.min(100,gauge+n);
+  if(state==='sulking'||state==='reconcile') return;
+  if(gauge>=100) setState('sulking');
+  else if(gauge>=70) setState('angry');
+  else if(gauge>=30) setState('annoyed');
+}
+setInterval(()=>{ if(gauge>0&&state!=='sulking'&&state!=='reconcile'){ gauge=Math.max(0,gauge-1.5);
+  if(gauge<30&&state!=='calm') setState('calm');
+  else if(gauge<70&&state==='angry') setState('annoyed'); } },1000);
+
+let fallen=false, fallDir=1, fallRock=null, fallTO=null, struggleInt=null;
+let hairDetached=false, hairTO=null;
+function detachHair(dir){
+  if(hairDetached||fallen) return; hairDetached=true;
+  // 포물선으로 뽑혀 날아가 바닥에 떨어짐
+  hair.style.transform='';
+  hair.animate([
+    {transform:'translate(0,0) rotate(0deg)'},
+    {transform:`translate(${dir*70}px,-70px) rotate(${dir*200}deg)`, offset:.45},
+    {transform:`translate(${dir*115}px,225px) rotate(${dir*380}deg)`}
+  ],{duration:750,easing:'cubic-bezier(.3,.7,.5,1)',fill:'forwards'});
+  faceTeary(); ssomkim.classList.remove('shake'); void ssomkim.offsetWidth; ssomkim.classList.add('shake');
+  snd(700,.25,'sine',.2,1100); say('앗!!! 내 털!!!',1100);
+  setTimeout(()=>{ if(hairDetached) say('주워줘!! 빨리!!',900); },1400);
+  hairTO=setTimeout(reattachHair, 5000);
+}
+function reattachHair(){
+  if(!hairDetached) return; clearTimeout(hairTO);
+  hair.getAnimations().forEach(a=>a.cancel());
+  hair.animate([
+    {transform:'translate(0,150px) rotate(180deg)'},
+    {transform:'translate(0,-14px) rotate(0deg)', offset:.75},
+    {transform:'translate(0,0) rotate(0deg)'}
+  ],{duration:480,easing:'ease-out'}).onfinish=()=>{ hairDetached=false; };
+  sparkle(); say('휴.. 다신 안 뽑히나 봐라.',1200);
+  setTimeout(()=>{ if(state==='calm')faceSmug(); else if(state==='annoyed')faceAnnoyed(); else if(state==='angry')faceAngry(); },300);
+}
+function pushOver(dir){
+  if(state==='sulking'||state==='reconcile'||fallen) return;
+  if(hairDetached) reattachHair();
+  fallen=true; fallDir=dir; tickleE=0; tickling=null;
+  ssomkim.classList.remove('tremble','squash','jump','wobble','shake');
+  snd(480,.5,'sine',.2,100); say('으와아아아앙?!',900); faceTeary();
+  rig.style.transformOrigin='150px 160px';
+  rig.animate([{transform:'translateY(0) rotate(0deg)'}, {transform:`translateY(26px) rotate(${dir*96}deg)`}], {duration:600,easing:'cubic-bezier(.3,1.3,.6,1)',fill:'forwards'});
+  updateShadow(1.3, 0.32, 0);
+  
+  setTimeout(()=> { if(!fallen) return;
+    fallRock=rig.animate([{transform:`translateY(26px) rotate(${dir*96}deg)`}, {transform:`translateY(26px) rotate(${dir*82}deg)`}, {transform:`translateY(26px) rotate(${dir*100}deg)`}], {duration:1200,iterations:Infinity,easing:'ease-in-out'});
+    struggleInt=setInterval(()=>{
+      say(['일으켜 줘어..잉','나 안 일어난다?!','손가락 빨리 대라..','흥 일부러 누운 거임'][Math.floor(Math.random()*4)],800);
+      snd(340,.1,'sine',.12,420);
+    },1600);
+  },600);
+  fallTO=setTimeout(()=>getUp(false),9000);
+}
+function getUp(helped){
+  if(!fallen) return; fallen=false;
+  clearTimeout(fallTO); clearInterval(struggleInt);
+  rig.getAnimations().forEach(a=>a.cancel());
+  rig.animate([{transform:`translateY(26px) rotate(${fallDir*96}deg)`}, {transform:`translateY(0) rotate(${-fallDir*15}deg)`}, {transform:`rotate(${fallDir*5}deg)`},{transform:'rotate(0deg)'}], {duration:850,easing:'ease-out'}).onfinish=()=>{ rig.style.transformOrigin=''; };
+  updateShadow(1, 0.26, 0); boing(); setTears(0);
+  if(helped){ sparkle(); say('..감동한 거 아님. 다음부턴 밀지 마라!',1500); gauge=Math.max(0,gauge-15); } 
+  else { say('칫.. 땅 바닥이 시원해서 자다 깸.',1400); addGauge(20); }
+  setTimeout(()=>{ if(state=='calm')faceSmug(); else if(state=='annoyed')faceAnnoyed(); else if(state=='angry')faceAngry(); },900);
+}
+
+const pokes={ calm:['뭐요.','왜.','손가락 치워라?'], annoyed:['아 좀!','적당히 찔러라','마! 고마해라!'], angry:['터진다니까!!💥','주먹 나간다?💢','작작 해라!!😡'] };
+function poke(x,y){
+  if(state==='sulking'){ ssomkim.classList.remove('shake'); void ssomkim.offsetWidth; ssomkim.classList.add('shake'); say('...',500); snd(200,.1,'sine',.08); return; }
+  if(state==='reconcile') return;
+  
+  combo++;
+  clearTimeout(comboTimer);
+  comboTimer = setTimeout(()=>{ combo = 0; ssomkim.classList.remove('tremble'); }, 1200);
+
+  ssomkim.classList.remove('squash','jump'); void ssomkim.offsetWidth;
+  if(state==='angry' || combo > 4){ 
+    ssomkim.classList.add('jump'); 
+    if(combo>4) ssomkim.classList.add('tremble');
+    grr(); 
+  } else { 
+    ssomkim.classList.add('squash'); boing(); 
+  }
+  
+  fluffs(3+Math.min(combo, 5), x, y, combo > 4 ? ['💥','⭐','✨'] : ['☁️','✨']);
+  kyu(Math.min(combo * 45, 300));
+
+  if(combo === 8 && !hairDetached) {
+    detachHair(Math.random()<.5?-1:1);
+    addGauge(14);
+  } else if(combo > 6) {
+    say(`연타 ${combo}콤보 작렬!! 아파!!`, 700);
+    addGauge(14);
+  } else {
+    say(pokes[state][Math.floor(Math.random()*3)],600);
+    addGauge(6);
+  }
+}
+
+function pinchStart(){
+  if(state==='sulking'||state==='reconcile'||fallen) return;
+  pressed=true; rig.style.transition='transform .15s cubic-bezier(.2,.9,.4,1.2)'; rig.style.transform='scale(1.5, .4)';
+  snd(260,.45,'sine',.22,95); faceTeary(); say('으아악!! 찌그러진다고!!',900);
+}
+function pinchEnd(){
+  if(!pressed) return; pressed=false; rig.style.transform='';
+  setTimeout(()=>{ rig.style.transition=''; },400);
+  ssomkim.classList.remove('wobble'); void ssomkim.offsetWidth; ssomkim.classList.add('wobble'); boing();
+  if(navigator.vibrate) navigator.vibrate(40);
+  addGauge(16);
+  if(state!=='sulking'&&state!=='reconcile'){
+    setTimeout(()=>{ if(state==='calm')faceSmug(); if(state==='annoyed')faceAnnoyed(); if(state==='angry')faceAngry(); },500);
+  }
+}
+
+let sx=0, sy=0, st=0, lx=0, ly=0, isDown=false;
+let strokeDist=0, petDist=0, tickleE=0, tickling=null;
+
+ssomkim.addEventListener('pointerdown', e=>{
+  e.preventDefault(); hint.style.opacity=0; isDown=true;
+  try{ ssomkim.setPointerCapture(e.pointerId); }catch(_){}
+  const r=stage.getBoundingClientRect();
+  const x=e.clientX-r.left, y=e.clientY-r.top;
+  sx=lx=e.clientX; sy=ly=e.clientY; st=Date.now(); petDist=0; strokeDist=0;
+  if(!fallen) pressTimer=setTimeout(()=>{ pressTimer=null; pinchStart(); },380);
+  ssomkim._xy=[x,y];
+});
+
+window.addEventListener('pointerup', ()=>{
+  isDown=false;
+  const dx=lx-sx, dy=ly-sy, dt=Date.now()-st;
+  if(fallen){ if(Math.abs(dx)+Math.abs(dy)<30){ if(pressTimer){clearTimeout(pressTimer);pressTimer=null;} getUp(true); } return; }
+  if(!pressed && dt<450 && Math.abs(dx)>90 && Math.abs(dx)>Math.abs(dy)*1.3){
+    if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; }
+    pushOver(dx>0?1:-1); return;
+  }
+  if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; if(!tickling) poke(...ssomkim._xy||[150,150]); }
+  else pinchEnd();
+});
+
+ssomkim.addEventListener('pointermove', e=>{
+  if(!isDown) return;
+  lx=e.clientX; ly=e.clientY;
+  const r=stage.getBoundingClientRect();
+  const yRelative=e.clientY-r.top;
+
+  if(fallen) return;
+
+  if(state==='sulking'){
+    strokeDist+=Math.abs(e.movementX)+Math.abs(e.movementY);
+    if(strokeDist>600){ strokeDist=0; clearTimeout(sulkTimer); reconcile(); }
+    return;
+  }
+  if(pressed || state==='reconcile') return;
+
+  const movement = Math.abs(e.movementX)+Math.abs(e.movementY);
+  if(movement > 4){
+    if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; }
+    
+    // 정수리/바보털 쓰다듬기 상단 판정 범위 개선
+    if(yRelative < 115 && state==='calm') {
+      petDist += movement;
+      if(petDist > 180) {
+        petDist = 0; purr(); 
+        fluffs(1, e.clientX-r.left, e.clientY-r.top, ['❤️','✨']);
+        say('흐으응.. 기분 조타.. 손 떼지 마라..', 900);
+        gauge = Math.max(0, gauge - 9);
+      }
+      return;
+    }
+    tickleE+=movement;
+  }
+
+  if(tickleE>140 && !tickling){
+    tickling='hold'; faceHoldLaugh(); ssomkim.classList.add('tremble');
+    say('..풉! 하나두 안 간지러운데?!',900); snd(420,.15,'sine',.12,500);
+  }
+  if(tickleE>460 && tickling=='hold'){
+    tickling='burst'; ssomkim.classList.remove('tremble'); faceLaugh(); giggle();
+    ssomkim.classList.remove('wobble'); void ssomkim.offsetWidth; ssomkim.classList.add('wobble');
+    fluffs(6,150,150,['😂','✨','☁️']); say('꺄하하핳!! 아 그만!! 배 찢어짐!!🤣',1400);
+    if(navigator.vibrate) navigator.vibrate([20,40,20,40,20]);
+    addGauge(4);
+    setTimeout(()=>{ tickling=null; tickleE=0;
+      if(state==='calm')faceSmug(); else if(state==='annoyed')faceAnnoyed(); else if(state==='angry')faceAngry();
+    },1500);
+  }
+});
+
+setInterval(()=>{ 
+  if(tickling!=='burst') tickleE=Math.max(0,tickleE*0.8-2);
+  if(tickleE<60 && tickling==='hold'){ tickling=null; ssomkim.classList.remove('tremble');
+    if(state==='calm')faceSmug(); else if(state==='annoyed')faceAnnoyed(); else if(state==='angry')faceAngry(); }
+},200);
+
+faceSmug();
+// 극대화된 볼륨 호흡 애니메이션
+$('body').animate([{transform:'scale(1,1)'},{transform:'scale(1.025,1.05)'},{transform:'scale(1,1)'}], {duration:2500,iterations:Infinity,easing:'ease-in-out'});
+
+setInterval(()=>{ if(state==='calm'&&!pressed&&!isDown){
+  $('browR').setAttribute('d','M180 100 Q198 92 216 100');
+  setTimeout(()=>{ if(state==='calm') $('browR').setAttribute('d','M180 108 Q198 98 216 108'); },400);
+}},4200);
+</script>
+</body>
+</html>
