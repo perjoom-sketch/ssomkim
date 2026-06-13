@@ -261,7 +261,7 @@ function loop(){
         s.got=true; score++; setHud(); sfxEat();
         const el=$('sn'+s.id);
         el.animate([{transform:'scale(1)',opacity:1},{transform:'scale(1.8)',opacity:0}],{duration:300,fill:'forwards'});
-        if(snacks.every(n=>n.got)){ setMsg('전부 냠! "이 정도야 뭐"',1500); setTimeout(()=>makeSnacks(),900); }
+        if(snacks.every(n=>n.got)){ setMsg('전부 냠!',1500); setTimeout(()=>makeSnacks(),900); }
       }
     });
 
@@ -276,7 +276,7 @@ function loop(){
       if(perfect){
         combo++; armed=0;
         puff.vy=-(landV*0.72 + 7 + combo*1.2);
-        setMsg(combo>1?`퍼펙트 x${combo}!! "날 막을 순 없음"`:'퍼펙트!! 통!',1100);
+        setMsg(combo>1?`퍼펙트 x${combo}!!`:'퍼펙트!!',1100);
         sfxPerfect(); faceJoy();
         bestLine.setAttribute('y1',GROUND-maxH); bestLine.setAttribute('y2',GROUND-maxH); bestLine.setAttribute('opacity','.8');
         cam.hitstop(3); cam.shake(5,160);
@@ -293,7 +293,7 @@ function loop(){
       if(Math.abs(puff.vy)<2.2){
         puff.vy=0; puff.vx*=0.3; state='ready';
         body.setAttribute('transform','');
-        if(landV>0){ sfxDud(); growKnob(); setMsg(score>0?'"착지 점수도 줘야 하는 거 아님?"':'"...방금 건 연습"',1200); }
+        if(landV>0){ sfxDud(); growKnob(); }
         faceNeutral(); setBand(0); render();
         cam.reset();
         setHud();
