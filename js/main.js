@@ -6,35 +6,30 @@
   const S = window.AppState;
   const R = window.AppReactions;
   const character = C.character;
+  const rig = C.rig;
   const hint = document.getElementById('hint');
   let pressTimer = null, pressed = false;
-  let fallen=false, fallDir=1, fallTO=null, struggleInt=null;
+  let fallen=false, fallDir=1, fallRock=null, fallTO=null, struggleInt=null;
   let sx=0, sy=0, st=0, lx=0, ly=0;
   let strokeDist=0, isDown=false, tickleE=0, tickling=null;
-
-  function partFromPoint(x,y){
-    if(y < 118) return 'head';
-    if(y > 210) return 'butt';
-    return 'belly';
-  }
-
   function pushOver(dir){
     if(S.state==='sulking'||S.state==='reconcile'||fallen) return;
     fallen=true; fallDir=dir; tickleE=0; tickling=null;
     character.classList.remove('tremble','squash','jump','wobble','shake');
     R.run({input:'push', state:S.state}, {x:150,y:150});
     C.faceTeary();
-    character.animate([{transform:'rotate(0deg) translateX(0)'},
-      {transform:`rotate(${dir*100}deg) translateX(${dir*36}px)`}],
+    rig.style.transformOrigin='150px 160px';
+    rig.animate([{transform:'translateY(0) rotate(0deg)'},
+      {transform:`translateY(12px) rotate(${dir*96}deg)`}],
       {duration:650,easing:'cubic-bezier(.35,1.3,.6,1)',fill:'forwards'});
+    C.$('shadow').setAttribute('rx',122); C.$('shadow').setAttribute('opacity',.28);
     setTimeout(()=>{ if(!fallen) return;
-      character.animate([{transform:`rotate(${dir*100}deg) translateX(${dir*36}px)`},
-        {transform:`rotate(${dir*76}deg) translateX(${dir*28}px)`},
-        {transform:`rotate(${dir*104}deg) translateX(${dir*38}px)`}],
+      fallRock=rig.animate([{transform:`translateY(12px) rotate(${dir*96}deg)`},
+        {transform:`translateY(12px) rotate(${dir*76}deg)`},
+        {transform:`translateY(12px) rotate(${dir*102}deg)`}],
         {duration:1100,iterations:Infinity,easing:'ease-in-out'});
       struggleInt=setInterval(()=>{
         R.run({input:'fallen_wait', state:'fallen'});
-        A.strain();
       },1500);
     },650);
     fallTO=setTimeout(()=>getUp(false),7500);
@@ -42,36 +37,37 @@
   function getUp(helped){
     if(!fallen) return; fallen=false;
     clearTimeout(fallTO); clearInterval(struggleInt);
-    character.getAnimations().forEach(a=>a.cancel());
-    character.animate([{transform:`rotate(${fallDir*100}deg) translateX(${fallDir*36}px)`},
-      {transform:`rotate(${-fallDir*12}deg) translateX(0)`},
+    rig.getAnimations().forEach(a=>a.cancel());
+    rig.animate([{transform:`translateY(12px) rotate(${fallDir*96}deg)`},
+      {transform:`translateY(0) rotate(${-fallDir*12}deg)`},
       {transform:`rotate(${fallDir*5}deg)`},{transform:'rotate(0deg)'}],
-      {duration:900,easing:'ease-out'});
+      {duration:900,easing:'ease-out'}).onfinish=()=>{ rig.style.transformOrigin=''; };
+    C.$('shadow').setAttribute('rx',86); C.$('shadow').setAttribute('opacity',.22);
     C.setTears(0); A.boing();
     R.run({input: helped ? 'help' : 'ignored', state:'fallen'});
     setTimeout(()=>C.restoreForState(S.state),950);
   }
 
-  function poke(x,y,part){
+  function poke(x,y){
     if(S.state==='sulking'){
       R.run({input:'tap', part:'any', state:'sulking'}, {x,y});
       return;
     }
     if(S.state==='reconcile') return;
-    R.run({input:'tap', part, state:S.state}, {x,y});
+    R.run({input:'tap', state:S.state}, {x,y});
   }
   function pinchStart(){
     if(S.state==='sulking'||S.state==='reconcile'||fallen) return;
     pressed=true;
-    character.style.transition='transform .4s';
-    character.style.transform='scale(1.35,.6)';
+    rig.style.transition='transform .16s cubic-bezier(.2,.9,.4,1.15)';
+    rig.style.transform='scale(1.35,.6)';
     C.faceTeary();
     R.run({input:'pinch_start', state:S.state});
   }
   function pinchEnd(){
     if(!pressed) return; pressed=false;
-    character.style.transform='';
-    setTimeout(()=>{ character.style.transition=''; },450);
+    rig.style.transform='';
+    setTimeout(()=>{ rig.style.transition=''; },450);
     R.run({input:'pinch_end', state:S.state});
     setTimeout(()=>{ if(S.state!=='sulking'&&S.state!=='reconcile') C.restoreForState(S.state); },500);
   }
@@ -83,7 +79,7 @@
     const x=e.clientX-r.left, y=e.clientY-r.top;
     sx=lx=e.clientX; sy=ly=e.clientY; st=Date.now(); strokeDist=0;
     if(!fallen) pressTimer=setTimeout(()=>{ pressTimer=null; pinchStart(); },350);
-    character._xy=[x,y,partFromPoint(x,y)];
+    character._xy=[x,y];
   });
   window.addEventListener('pointerup', ()=>{
     isDown=false;
@@ -94,7 +90,7 @@
       pushOver(dx>0?1:-1); return;
     }
     if(pressTimer){ clearTimeout(pressTimer); pressTimer=null;
-      if(!tickling) poke(...(character._xy||[150,150,'belly'])); }
+      if(!tickling) poke(...(character._xy||[150,150])); }
     else pinchEnd();
   });
 

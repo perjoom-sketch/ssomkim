@@ -3,7 +3,6 @@
   let state = 'calm';
   let sulkTimer = null;
   const C = window.AppCharacter;
-  const A = window.AppAudio;
   function setState(s){
     if(state===s) return;
     state=s;

@@ -1,9 +1,10 @@
 (function(){
   const $ = id => document.getElementById(id);
   const character = $('character');
+  const rig = $('rig');
   const speech = $('speech');
   const stage = $('stage');
-  const BODY_SOFT = "M150 26 C 92 26, 56 78, 52 150 C 49 208, 70 262, 116 270 C 132 274, 138 258, 150 258 C 162 258, 168 274, 184 270 C 230 262, 251 208, 248 150 C 244 78, 208 26, 150 26 Z";
+  const BODY_SOFT = "M172 26 C 112 20, 70 66, 66 132 C 46 196, 66 262, 116 270 C 132 274, 138 258, 150 258 C 162 258, 168 274, 184 270 C 226 264, 245 214, 244 158 C 246 84, 224 32, 172 26 Z";
   const BODY_BUFF = "M150 30 C 96 30, 56 50, 50 92 C 46 128, 88 198, 114 260 C 122 274, 134 268, 150 268 C 166 268, 178 274, 186 260 C 212 198, 254 128, 250 92 C 244 50, 204 30, 150 30 Z";
   function say(t, ms=750){ speech.textContent=t; speech.style.opacity=1; clearTimeout(say._t); say._t=setTimeout(()=>speech.style.opacity=0,ms); }
   function fluffs(n,x,y){
@@ -18,11 +19,13 @@
   }
   function setBuff(on){
     $('body').setAttribute('d', on? BODY_BUFF : BODY_SOFT);
-    $('belly').setAttribute('opacity', on? 0 : .45);
-    $('armL').setAttribute('cx', on?64:78);  $('armL').setAttribute('cy', on?112:196);
-    $('armL').setAttribute('rx', on?26:20);  $('armL').setAttribute('ry', on?32:26);
-    $('armR').setAttribute('cx', on?236:222); $('armR').setAttribute('cy', on?112:196);
-    $('armR').setAttribute('rx', on?26:20);  $('armR').setAttribute('ry', on?32:26);
+    $('bellyShade').setAttribute('opacity', on? 0 : .45);
+    $('armL').setAttribute('cx', on?60:54);  $('armL').setAttribute('cy', on?110:192);
+    $('armL').setAttribute('rx', on?24:15);  $('armL').setAttribute('ry', on?32:27);
+    $('armL').setAttribute('transform', on?'rotate(-24 60 110)':'rotate(16 54 192)');
+    $('armR').setAttribute('cx', on?240:246); $('armR').setAttribute('cy', on?110:192);
+    $('armR').setAttribute('rx', on?24:15);  $('armR').setAttribute('ry', on?32:27);
+    $('armR').setAttribute('transform', on?'rotate(24 240 110)':'rotate(-16 246 192)');
     $('footL').setAttribute('cx', on?128:112);
     $('footR').setAttribute('cx', on?172:188);
   }
@@ -32,7 +35,12 @@
     $('blushL').setAttribute('opacity', red? .9 : .65);
     $('blushR').setAttribute('opacity', red? .9 : .65);
   }
-  function showBack(on){ $('front').setAttribute('opacity', on?0:1); $('back').setAttribute('opacity', on?1:0); }
+  function showBack(on){
+    $('front').setAttribute('opacity', on?0:1);
+    $('back').setAttribute('opacity', on?1:0);
+    $('bandaid').setAttribute('transform',
+      on ? 'translate(300,0) scale(-1,1) translate(24,8) rotate(-22 105 62)' : 'translate(24,8) rotate(-22 105 62)');
+  }
   function faceSmug(){
     $('lidL').setAttribute('ry',8); $('lidR').setAttribute('ry',8);
     $('browL').setAttribute('d','M86 110 Q102 102 118 110');
@@ -84,5 +92,5 @@
     $('mouth').setAttribute('d','M130 166 Q150 196 170 166');
   }
   function restoreForState(state){ if(state==='calm')faceSmug(); else if(state==='annoyed')faceAnnoyed(); else if(state==='angry')faceAngry(); }
-  window.AppCharacter = { $, character, speech, stage, say, fluffs, setTears, showBack, faceSmug, faceAnnoyed, faceAngry, faceTeary, faceHappy, faceHoldLaugh, faceLaugh, restoreForState };
+  window.AppCharacter = { $, character, rig, speech, stage, say, fluffs, setTears, showBack, faceSmug, faceAnnoyed, faceAngry, faceTeary, faceHappy, faceHoldLaugh, faceLaugh, restoreForState };
 })();
