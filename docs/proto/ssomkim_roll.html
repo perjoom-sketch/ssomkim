@@ -160,7 +160,6 @@ svg.addEventListener('pointerup',e=>{
   puff.vy=-Math.abs(Math.sin(ang))*power*5.5 - power*1.5;
   state='roll';
   snd(300,.2,'sine',.2,140);
-  setMsg('굴러간다!',700);
 });
 
 // ── 물리 루프 ──
@@ -210,11 +209,10 @@ function celebrate(total){
   },60);
   snd(700,.5,'sine',.2,300);
   const allDown = total>=pins.length;
-  setMsg(allDown?'스트라이크!! 우웨에 어지러워':`${total}개 쓰러뜨림! 어질어질..`,2000);
+  setMsg(allDown?'스트라이크!!':`${total}개 쓰러뜨림!`,2000);
   setTimeout(()=>{
     clearInterval(spin);
-    setMsg(allDown?'"이 구역 1등은 나임"':'"코너에서 미끄러진 거임"',1600);
-    setTimeout(()=>{ round++; reset(); },1700);
+    setTimeout(()=>{ round++; reset(); },500);
   },2000);
 }
 
