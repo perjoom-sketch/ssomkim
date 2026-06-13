@@ -1,33 +1,33 @@
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html,body { height:100%; overflow:hidden; touch-action:manipulation; }
-  body {
-    background: radial-gradient(ellipse at 50% 38%, #dde6da 0%, #bfcdbd 65%, #a9baa7 100%);
-    font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    user-select:none; -webkit-user-select:none;
-  }
-  #stage { position:relative; width:min(88vw, 480px); touch-action:none; }
-  #character { width:100%; cursor:pointer; touch-action:none; }
-  #rig { transform-box: view-box; transform-origin: 50% 90%; will-change: transform; }
-  #character.squash #rig { animation: squash .45s; }
-  #character.shake  #rig { animation: shake .4s; }
-  #character.jump   #rig { animation: jump .55s; }
-  #character.wobble #rig { animation: wobble 1.5s; }
-  #character.tremble #rig { animation: tremble .12s infinite; }
-  @keyframes tremble { 0%,100%{transform:translateX(0) rotate(0)} 50%{transform:translateX(3px) rotate(.6deg)} }
-  @keyframes squash { 0%{transform:scale(1,1)} 18%{transform:scale(1.28,.68)} 55%{transform:scale(.93,1.09)} 78%{transform:scale(1.04,.97)} 100%{transform:scale(1,1)} }
-  @keyframes shake  { 0%,100%{transform:rotate(0)} 15%{transform:rotate(-4.5deg)} 55%{transform:rotate(3.5deg)} 80%{transform:rotate(-1.5deg)} }
-  @keyframes jump   { 0%,100%{transform:translateY(0) scale(1,1)} 22%{transform:translateY(-34px) scale(.94,1.08)} 58%{transform:translateY(0) scale(1.16,.84)} 80%{transform:translateY(-6px) scale(.98,1.02)} }
-  @keyframes wobble { 0%,100%{transform:rotate(0)} 20%{transform:rotate(-6deg)} 40%{transform:rotate(5deg)} 60%{transform:rotate(-3deg)} 80%{transform:rotate(2deg)} }
-  #speech {
-    position:absolute; top:-14px; left:50%; transform:translateX(-50%);
-    background:#fffdf8; border:3px solid #4a3a2a; border-radius:18px;
-    padding:8px 16px; font-size:19px; font-weight:800; color:#4a3a2a;
-    opacity:0; transition:opacity .15s; white-space:nowrap; pointer-events:none; z-index:5;
-  }
-  #speech::after {
-    content:''; position:absolute; bottom:-12px; left:50%; transform:translateX(-50%);
-    border:8px solid transparent; border-top:10px solid #4a3a2a;
-  }
-  #hint { margin-top:16px; color:#55675a; font-size:14px; font-weight:600; opacity:.85; }
-  .fluff { position:absolute; pointer-events:none; font-size:16px; will-change:transform,opacity; z-index:4; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { height:100%; overflow:hidden; touch-action:manipulation; overscroll-behavior:none; }
+body {
+  background: radial-gradient(circle at 50% 40%, #eef5ec 0%, #d2ded0 50%, #b2c4b0 100%);
+  font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  user-select:none; -webkit-user-select:none;
+}
+#stage { position:relative; width:min(88vw, 480px); touch-action:none; }
+#character { width:100%; cursor:pointer; touch-action:none; filter: drop-shadow(0 10px 20px rgba(93,74,51,0.12)); }
+#rig { transform-box: view-box; transform-origin: 50% 90%; will-change: transform; transition: transform .1s ease-out; }
+#character.squash #rig { animation: squash .45s; }
+#character.shake  #rig { animation: shake .4s; }
+#character.jump   #rig { animation: jump .55s; }
+#character.wobble #rig { animation: wobble 1.5s; }
+#character.tremble #rig { animation: tremble .1s infinite; }
+@keyframes tremble { 0%,100%{transform:translateX(0) rotate(0)} 50%{transform:translateX(3px) rotate(.6deg)} }
+@keyframes squash { 0%{transform:scale(1,1)} 18%{transform:scale(1.26,.72)} 55%{transform:scale(.94,1.08)} 78%{transform:scale(1.03,.98)} 100%{transform:scale(1,1)} }
+@keyframes shake  { 0%,100%{transform:rotate(0)} 15%{transform:rotate(-4.5deg)} 55%{transform:rotate(3.5deg)} 80%{transform:rotate(-1.5deg)} }
+@keyframes jump   { 0%,100%{transform:translateY(0) scale(1,1)} 22%{transform:translateY(-42px) scale(.92,1.12)} 58%{transform:translateY(0) scale(1.16,.84)} 80%{transform:translateY(-6px) scale(.99,1.01)} }
+@keyframes wobble { 0%,100%{transform:rotate(0)} 20%{transform:rotate(-6deg)} 40%{transform:rotate(5deg)} 60%{transform:rotate(-3deg)} 80%{transform:rotate(2deg)} }
+#meter { position:absolute; left:50%; bottom:-8px; transform:translateX(-50%); width:72%; height:12px; border:2px solid #4a3a2a; border-radius:999px; background:rgba(255,255,255,.55); overflow:hidden; z-index:3; box-shadow:0 4px 0 rgba(74,58,42,.10); }
+#meterFill { display:block; width:0%; height:100%; background:linear-gradient(90deg,#8fcf9b,#ffd36e,#ee7b6d); transition:width .18s ease-out; }
+#speech {
+  position:absolute; top:-25px; left:50%; transform:translateX(-50%);
+  background: linear-gradient(135deg, #ffffff 0%, #fffdf4 100%); border:3px solid #4a3a2a; border-radius:20px;
+  padding:10px 20px; font-size:19px; font-weight:800; color:#4a3a2a;
+  opacity:0; transition:opacity .15s, transform .15s; white-space:nowrap; pointer-events:none; z-index:5;
+  box-shadow: 0 8px 0 rgba(74,58,42,0.12), 0 15px 20px rgba(0,0,0,0.05);
+}
+#speech::after { content:''; position:absolute; bottom:-12px; left:50%; transform:translateX(-50%); border:8px solid transparent; border-top:10px solid #4a3a2a; }
+#hint { margin-top:16px; color:#55675a; font-size:14px; font-weight:600; opacity:.85; text-align:center; line-height:1.6; }
+.fluff { position:absolute; pointer-events:none; font-size:22px; will-change:transform,opacity; z-index:4; }

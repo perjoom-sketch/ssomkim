@@ -26,6 +26,8 @@
     giggle: () => { [0,90,180,280,380].forEach((t,i)=>setTimeout(()=>snd(520+i*110,.09,'sine',.2,640+i*110),t)); },
     tiny: () => snd(200,.1,'sine',.08),
     strain: () => snd(380,.1,'sine',.12,460),
+    purr: () => { snd(280,.12,'triangle',.15,240); setTimeout(()=>snd(300,.12,'triangle',.15,260),80); },
+    hairPop: () => snd(700,.25,'sine',.2,1100),
     holdLaugh: () => snd(420,.15,'sine',.12,500),
     angryHit: () => snd(120,.3,'sawtooth',.18,90)
   };

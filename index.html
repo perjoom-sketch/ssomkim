@@ -8,130 +8,42 @@
 <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
-
 <div id="stage">
   <div id="speech"></div>
+  <div id="meter" aria-label="빡침 게이지"><span id="meterFill"></span></div>
   <svg id="character" viewBox="0 0 300 300">
     <defs>
-      <radialGradient id="fur" cx="40%" cy="30%" r="78%">
-        <stop offset="0%" stop-color="#ffffff"/>
-        <stop offset="55%" stop-color="#f4eee4"/>
-        <stop offset="85%" stop-color="#ddd0bd"/>
-        <stop offset="100%" stop-color="#c9b9a3"/>
-      </radialGradient>
-      <radialGradient id="furBack" cx="48%" cy="32%" r="78%">
-        <stop offset="0%" stop-color="#fbf7ef"/>
-        <stop offset="70%" stop-color="#eae0d0"/>
-        <stop offset="100%" stop-color="#cbbba5"/>
-      </radialGradient>
-      <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
-        <feGaussianBlur stdDeviation="1.2"/>
-      </filter>
+      <radialGradient id="fur" cx="35%" cy="28%" r="75%"><stop offset="0%" stop-color="#ffffff"/><stop offset="25%" stop-color="#fcfaf4"/><stop offset="60%" stop-color="#f2e9dc"/><stop offset="88%" stop-color="#decfa7"/><stop offset="100%" stop-color="#c4b387"/></radialGradient>
+      <radialGradient id="furBack" cx="50%" cy="30%" r="75%"><stop offset="0%" stop-color="#faf6ee"/><stop offset="65%" stop-color="#e8dcbf"/><stop offset="100%" stop-color="#bead83"/></radialGradient>
+      <linearGradient id="pupilGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2b1f14"/><stop offset="100%" stop-color="#4a3928"/></linearGradient>
+      <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2"/></filter>
+      <filter id="shadowBlur"><feGaussianBlur stdDeviation="3"/></filter>
     </defs>
-
-    <!-- 그림자 (지면 고정 레이어 — 회전 안 함) -->
-    <ellipse id="shadow" cx="150" cy="276" rx="86" ry="12" fill="rgba(55,75,60,.22)"/>
-
-    <!-- 몸 리그 (모든 모션은 이 그룹에만) -->
-    <g id="rig">
-
-    <!-- ===== 정면 ===== -->
-    <g id="front">
-      <!-- 몸 (계란형 + 처진 뱃살 라인) -->
-      <path id="body" d="M172 26
-        C 112 20, 70 66, 66 132
-        C 46 196, 66 262, 116 270
-        C 132 274, 138 258, 150 258
-        C 162 258, 168 274, 184 270
-        C 226 264, 245 214, 244 158
-        C 246 84, 224 32, 172 26 Z" fill="url(#fur)" stroke="#5d4a33" stroke-width="1.8" stroke-linejoin="round"/>
-      <ellipse cx="132" cy="68" rx="38" ry="21" fill="#ffffff" opacity=".4" filter="url(#soft)" transform="rotate(-16 112 74)"/>
-      <!-- 뱃살 음영 -->
-      <ellipse id="bellyShade" cx="142" cy="232" rx="58" ry="26" fill="#c4b29a" opacity=".55" filter="url(#soft)"/>
-
-      <!-- 팔 (옆구리에서 삐져나온 뭉툭) -->
-      <ellipse id="armL" cx="54"  cy="192" rx="15" ry="27" fill="url(#fur)" stroke="#5d4a33" stroke-width="1.4" transform="rotate(16 54 192)"/>
-      <ellipse id="armR" cx="246" cy="192" rx="15" ry="27" fill="url(#fur)" stroke="#5d4a33" stroke-width="1.4" transform="rotate(-16 246 192)"/>
-      <!-- 발 -->
-      <ellipse id="footL" cx="112" cy="264" rx="20" ry="13" fill="#f2ece0" stroke="#5d4a33" stroke-width="1.4"/>
-      <ellipse id="footR" cx="188" cy="264" rx="20" ry="13" fill="#f2ece0" stroke="#5d4a33" stroke-width="1.4"/>
-
-      <!-- 볼터치 -->
-      <ellipse id="blushL" cx="92"  cy="158" r="0" rx="22" ry="15" fill="#f3a8a0" opacity=".65" filter="url(#soft)"/>
-      <ellipse id="blushR" cx="208" cy="158" rx="22" ry="15" fill="#f3a8a0" opacity=".65" filter="url(#soft)"/>
-
-      <!-- 눈썹 -->
-      <path id="browL" d="M86 110 Q102 102 118 110" stroke="#6b5638" stroke-width="5" stroke-linecap="round" fill="none"/>
-      <path id="browR" d="M182 110 Q198 102 214 110" stroke="#6b5638" stroke-width="5" stroke-linecap="round" fill="none"/>
-
-      <!-- 눈 -->
-      <g id="eyeLg">
-        <ellipse id="eyeWL" cx="104" cy="134" rx="20" ry="17" fill="#fff" stroke="#5d4a33" stroke-width="1"/>
-        <circle  id="eyeL"  cx="108" cy="136" r="12" fill="#3a2c1c"/>
-        <circle cx="112" cy="131" r="4" fill="#fff"/>
-        <ellipse id="lidL" cx="104" cy="123" rx="22" ry="8" fill="url(#fur)"/>
-        <ellipse id="tearL" cx="92" cy="148" rx="0" ry="0" fill="#bfe6f7" opacity=".9"/>
-      </g>
-      <g id="eyeRg">
-        <ellipse id="eyeWR" cx="196" cy="134" rx="20" ry="17" fill="#fff" stroke="#5d4a33" stroke-width="1"/>
-        <circle  id="eyeR"  cx="192" cy="136" r="12" fill="#3a2c1c"/>
-        <circle cx="196" cy="131" r="4" fill="#fff"/>
-        <ellipse id="lidR" cx="196" cy="123" rx="22" ry="8" fill="url(#fur)"/>
-        <ellipse id="tearR" cx="208" cy="148" rx="0" ry="0" fill="#bfe6f7" opacity=".9"/>
-      </g>
-
-      <!-- 입 (씨익) -->
-      <path id="mouth" d="M136 172 Q150 182 164 172" stroke="#8a6a4a" stroke-width="5" stroke-linecap="round" fill="none"/>
-
-      <!-- 분노 김 -->
-      <g id="steam" opacity="0">
-        <path d="M62 52 q-8 -10 0 -20 q8 -10 0 -18" stroke="#c9b59a" stroke-width="5" fill="none" stroke-linecap="round"/>
-        <path d="M238 52 q8 -10 0 -20 q-8 -10 0 -18" stroke="#c9b59a" stroke-width="5" fill="none" stroke-linecap="round"/>
-      </g>
+    <ellipse id="shadow" cx="150" cy="278" rx="88" ry="13" fill="rgba(43,59,47,.26)" filter="url(#shadowBlur)" style="transition: all 0.15s ease-out; transform-origin: 150px 278px;"/>
+    <g id="rig"><g id="front">
+      <path id="hair" d="M150 34 Q142 12 128 16 Q140 6 154 28" fill="url(#fur)" stroke="#5d4a33" stroke-width="1.8" stroke-linejoin="round" style="transform-origin: 150px 34px; transition: transform 0.1s;"/>
+      <path id="body" d="M172 26 C 112 20, 70 66, 66 132 C 46 196, 66 262, 116 270 C 132 274, 138 258, 150 258 C 162 258, 168 274, 184 270 C 226 264, 245 214, 244 158 C 246 84, 224 32, 172 26 Z" fill="url(#fur)" stroke="#5d4a33" stroke-width="2" stroke-linejoin="round"/>
+      <g id="bump"><ellipse cx="206" cy="34" rx="15" ry="13" fill="url(#fur)" stroke="#5d4a33" stroke-width="1.6"/><ellipse cx="202" cy="30" rx="5" ry="3.5" fill="#ffffff" opacity=".5" filter="url(#soft)"/><path d="M199 28 Q206 23 213 28" stroke="#e88" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".55"/></g>
+      <ellipse cx="135" cy="62" rx="42" ry="24" fill="#ffffff" opacity=".45" filter="url(#soft)" transform="rotate(-14 135 62)"/>
+      <ellipse id="belly" cx="144" cy="224" rx="62" ry="46" fill="transparent"/>
+      <ellipse id="bellyShade" cx="144" cy="234" rx="60" ry="24" fill="#baa478" opacity=".45" filter="url(#soft)"/>
+      <ellipse id="armL" cx="54" cy="192" rx="16" ry="28" fill="url(#fur)" stroke="#5d4a33" stroke-width="1.6" transform="rotate(18 54 192)"/><ellipse id="armR" cx="246" cy="192" rx="16" ry="28" fill="url(#fur)" stroke="#5d4a33" stroke-width="1.6" transform="rotate(-18 246 192)"/>
+      <ellipse id="footL" cx="110" cy="265" rx="21" ry="14" fill="#f5f0e6" stroke="#5d4a33" stroke-width="1.6"/><ellipse id="footR" cx="190" cy="265" rx="21" ry="14" fill="#f5f0e6" stroke="#5d4a33" stroke-width="1.6"/>
+      <g id="blush"><ellipse id="blushL" cx="90" cy="158" rx="24" ry="17" fill="#ff9285" opacity=".65" filter="url(#soft)"/><ellipse id="blushR" cx="210" cy="158" rx="24" ry="17" fill="#ff9285" opacity=".65" filter="url(#soft)"/><circle cx="84" cy="154" r="3" fill="#fff" opacity=".4" filter="url(#soft)"/><circle cx="204" cy="154" r="3" fill="#fff" opacity=".4" filter="url(#soft)"/></g>
+      <g id="brow"><path id="browL" d="M84 108 Q102 98 120 108" stroke="#544129" stroke-width="5.5" stroke-linecap="round" fill="none"/><path id="browR" d="M180 108 Q198 98 216 108" stroke="#544129" stroke-width="5.5" stroke-linecap="round" fill="none"/></g>
+      <g id="eyeLg"><ellipse id="eyeWL" cx="104" cy="134" rx="21" ry="18" fill="#fff" stroke="#5d4a33" stroke-width="1.2"/><g id="pupilLg"><circle id="eyeL" cx="108" cy="136" r="13" fill="url(#pupilGrad)"/><circle cx="113" cy="131" r="4.5" fill="#fff"/><circle cx="104" cy="141" r="2" fill="#fff" opacity=".6"/></g><ellipse id="lidL" cx="104" cy="122" rx="23" ry="9" fill="url(#fur)"/><ellipse id="tearL" cx="92" cy="148" rx="0" ry="0" fill="#a6e3ff" opacity=".95"/></g>
+      <g id="eyeRg"><ellipse id="eyeWR" cx="196" cy="134" rx="21" ry="18" fill="#fff" stroke="#5d4a33" stroke-width="1.2"/><g id="pupilRg"><circle id="eyeR" cx="192" cy="136" r="13" fill="url(#pupilGrad)"/><circle cx="197" cy="131" r="4.5" fill="#fff"/><circle cx="188" cy="141" r="2" fill="#fff" opacity=".6"/></g><ellipse id="lidR" cx="196" cy="122" rx="23" ry="9" fill="url(#fur)"/><ellipse id="tearR" cx="208" cy="148" rx="0" ry="0" fill="#a6e3ff" opacity=".95"/></g>
+      <g id="eyelid"></g><path id="mouth" d="M134 172 Q150 184 166 172" stroke="#78593a" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+      <g id="steam" opacity="0"><path d="M58 48 q-8 -12 0 -24 q8 -12 0 -20" stroke="#d5c0a3" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M242 48 q8 -12 0 -24 q-8 -12 0 -20" stroke="#d5c0a3" stroke-width="5" fill="none" stroke-linecap="round"/></g>
+    </g><g id="back" opacity="0">
+      <path d="M172 26 C 112 20, 70 66, 66 132 C 46 196, 66 262, 116 270 C 132 274, 138 258, 150 258 C 162 258, 168 274, 184 270 C 226 264, 245 214, 244 158 C 246 84, 224 32, 172 26 Z" fill="url(#furBack)" stroke="#5d4a33" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M150 140 C 145 190, 145 224, 150 252" stroke="#ccbea6" stroke-width="4.5" fill="none" stroke-linecap="round" opacity=".8"/><ellipse cx="112" cy="224" rx="26" ry="18" fill="#ff9b94" opacity=".45" filter="url(#soft)" transform="rotate(14 112 224)"/><ellipse cx="188" cy="224" rx="26" ry="18" fill="#ff9b94" opacity=".45" filter="url(#soft)" transform="rotate(-14 188 224)"/><ellipse cx="110" cy="265" rx="21" ry="14" fill="#f5f0e6" stroke="#5d4a33" stroke-width="1.6"/><ellipse cx="190" cy="265" rx="21" ry="14" fill="#f5f0e6" stroke="#5d4a33" stroke-width="1.6"/>
     </g>
-
-    <!-- ===== 등 (삐짐) ===== -->
-    <g id="back" opacity="0">
-      <path d="M172 26
-        C 112 20, 70 66, 66 132
-        C 46 196, 66 262, 116 270
-        C 132 274, 138 258, 150 258
-        C 162 258, 168 274, 184 270
-        C 226 264, 245 214, 244 158
-        C 246 84, 224 32, 172 26 Z" fill="url(#furBack)" stroke="#5d4a33" stroke-width="1.8" stroke-linejoin="round"/>
-      <path d="M150 150 C 146 196, 146 226, 150 252" stroke="#d6c9b6" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
-      <!-- 엉덩이 반점 (양쪽, 발그레) -->
-      <ellipse cx="114" cy="224" rx="24" ry="16" fill="#f2a3a0" opacity=".42" filter="url(#soft)" transform="rotate(14 114 224)"/>
-      <ellipse cx="186" cy="224" rx="24" ry="16" fill="#f2a3a0" opacity=".42" filter="url(#soft)" transform="rotate(-14 186 224)"/>
-      <ellipse cx="112" cy="264" rx="20" ry="13" fill="#f2ece0" stroke="#5d4a33" stroke-width="1.4"/>
-      <ellipse cx="188" cy="264" rx="20" ry="13" fill="#f2ece0" stroke="#5d4a33" stroke-width="1.4"/>
-    </g>
-
-    <!-- 반창고 (시그니처, 모든 상태 공통: 마지막에 그려 최상위) -->
-    <g id="bandaid" transform="translate(24,8) rotate(-22 105 62)">
-      <rect x="62" y="50" width="86" height="26" rx="12" fill="#e8c9a0" stroke="#d4b288" stroke-width="1.5"/>
-      <rect x="90" y="54" width="30" height="18" rx="4" fill="#f0d9b8"/>
-      <g fill="#c9a87e">
-        <circle cx="72" cy="58" r="1.6"/><circle cx="79" cy="63" r="1.6"/><circle cx="72" cy="68" r="1.6"/>
-        <circle cx="138" cy="58" r="1.6"/><circle cx="131" cy="63" r="1.6"/><circle cx="138" cy="68" r="1.6"/>
-      </g>
-    </g>
-
-    <!-- 하트 (화해/애교) -->
-    <g id="hearts" opacity="0" fill="#f08a8a">
-      <path d="M58 90 c-5-8-18-4-16 5 c1 6 10 11 16 15 c6-4 15-9 16-15 c2-9-11-13-16-5z"/>
-      <path d="M242 78 c-4-7-15-3-13 4 c1 5 8 9 13 12 c5-3 12-7 13-12 c2-7-9-11-13-4z"/>
-    </g>
-    </g><!-- /rig -->
+    <g id="bandaid" transform="translate(24,8) rotate(-22 105 62)" filter="drop-shadow(0 4px 5px rgba(0,0,0,0.08))"><rect x="60" y="48" width="88" height="28" rx="14" fill="#ebbfa2" stroke="#cfa282" stroke-width="1.5"/><rect x="88" y="52" width="32" height="20" rx="4" fill="#f7e5cb"/><g fill="#ba9272"><circle cx="71" cy="56" r="1.6"/><circle cx="79" cy="62" r="1.6"/><circle cx="71" cy="68" r="1.6"/><circle cx="137" cy="56" r="1.6"/><circle cx="129" cy="62" r="1.6"/><circle cx="137" cy="68" r="1.6"/></g></g>
+    <g id="hearts" opacity="0" fill="#ff7373"><path d="M58 90 c-5-8-18-4-16 5 c1 6 10 11 16 15 c6-4 15-9 16-15 c2-9-11-13-16-5z"/><path d="M242 78 c-4-7-15-3-13 4 c1 5 8 9 13 12 c5-3 12-7 13-12 c2-7-9-11-13-4z"/></g></g>
   </svg>
 </div>
-<div id="hint">탭: 찌르기 / 길게: 꼬집기 / 문지르기: 간지럼 / 휙: 밀기 👆</div>
-
-<script src="js/config.js"></script>
-<script src="js/audio.js"></script>
-<script src="js/character.js"></script>
-<script src="js/statemachine.js"></script>
-<script src="js/reactions.js"></script>
-<script src="js/main.js"></script>
+<div id="hint">👆 탭: 찌르기(콤보!) | ✊ 길게: 누르기 | 💨 휙: 밀기<br>🖐️ 정수리 비비기: 쓰다듬기 | ↔️ 몸통 비비기: 간지럼</div>
+<script src="js/config.js"></script><script src="js/audio.js"></script><script src="js/character.js"></script><script src="js/statemachine.js"></script><script src="js/reactions.js"></script><script src="js/main.js"></script>
 </body>
 </html>
