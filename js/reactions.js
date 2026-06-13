@@ -54,7 +54,7 @@
       return;
     }
     if(anim.type === 'fluff'){
-      C.fluffs(anim.count || 3, context.x || 150, context.y || 150);
+      C.fluffs(anim.count || 3, context.x || 150, context.y || 150, anim.types || ['☁️']);
       return;
     }
     if(anim.type === 'turn_away'){

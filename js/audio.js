@@ -24,6 +24,7 @@
     grumble: () => snd(160,.22,'sawtooth',.12,120),
     sparkle: () => { snd(900,.1); setTimeout(()=>snd(1200,.12),90); setTimeout(()=>snd(1500,.18),190); },
     giggle: () => { [0,90,180,280,380].forEach((t,i)=>setTimeout(()=>snd(520+i*110,.09,'sine',.2,640+i*110),t)); },
+    purr: () => { snd(280,.12,'triangle',.15,240); setTimeout(()=>snd(300,.12,'triangle',.15,260),80); },
     tiny: () => snd(200,.1,'sine',.08),
     strain: () => snd(380,.1,'sine',.12,460),
     holdLaugh: () => snd(420,.15,'sine',.12,500),
