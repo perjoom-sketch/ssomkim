@@ -2,10 +2,10 @@
   "version": 1,
   "reactions": [
     {
-      "id": "tap_calm_default",
+      "id": "tap_head_calm_1",
       "trigger": {
         "input": "tap",
-        "part": "*",
+        "part": "head",
         "state": "calm"
       },
       "weight": 1,
@@ -13,39 +13,422 @@
         {
           "target": "body",
           "type": "squash",
-          "dur": 450
+          "dur": 450,
+          "action": "squash"
         },
         {
           "target": "stage",
           "type": "fluff",
-          "count": 3
+          "count": 3,
+          "types": [
+            "☁️",
+            "✨"
+          ],
+          "action": "fluff"
         }
       ],
-      "line": {
-        "pool": [
-          "뭐.",
-          "왜.",
-          "지금 뭐 함?"
-        ],
-        "show_ms": 600
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
       },
-      "gauge": 8,
       "sounds": [
-        {
-          "fn": "boing",
-          "pitch": 1.0
-        },
         {
           "fn": "kyu",
           "pitch": 1.0
         }
-      ]
+      ],
+      "line": {
+        "pool": [
+          "뭐요.",
+          "왜."
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
     },
     {
-      "id": "tap_annoyed_default",
+      "id": "tap_head_calm_2",
       "trigger": {
         "input": "tap",
-        "part": "*",
+        "part": "head",
+        "state": "calm"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "squash",
+          "dur": 450,
+          "action": "squash"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "☁️",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "손 치워라?",
+          "정수리 아님."
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_head_calm_3",
+      "trigger": {
+        "input": "tap",
+        "part": "head",
+        "state": "calm"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "squash",
+          "dur": 450,
+          "action": "squash"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "☁️",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "봤냐 방금?",
+          "별일 없었다."
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_belly_calm_1",
+      "trigger": {
+        "input": "tap",
+        "part": "belly",
+        "state": "calm"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "squash",
+          "dur": 450,
+          "action": "squash"
+        },
+        {
+          "target": "belly",
+          "type": "jiggle",
+          "dur": 600,
+          "action": "jiggle"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "☁️",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "뭐임?",
+          "배 아님."
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_belly_calm_2",
+      "trigger": {
+        "input": "tap",
+        "part": "belly",
+        "state": "calm"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "squash",
+          "dur": 450,
+          "action": "squash"
+        },
+        {
+          "target": "belly",
+          "type": "jiggle",
+          "dur": 600,
+          "action": "jiggle"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "☁️",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "방금 너냐?",
+          "근육인데."
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_belly_calm_3",
+      "trigger": {
+        "input": "tap",
+        "part": "belly",
+        "state": "calm"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "squash",
+          "dur": 450,
+          "action": "squash"
+        },
+        {
+          "target": "belly",
+          "type": "jiggle",
+          "dur": 600,
+          "action": "jiggle"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "☁️",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "손가락 치워라?",
+          "간 봤냐?"
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_butt_calm_1",
+      "trigger": {
+        "input": "tap",
+        "part": "butt",
+        "state": "calm"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "squash",
+          "dur": 450,
+          "action": "squash"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "☁️",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "거긴 왜.",
+          "뒤끝 있다?"
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_butt_calm_2",
+      "trigger": {
+        "input": "tap",
+        "part": "butt",
+        "state": "calm"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "squash",
+          "dur": 450,
+          "action": "squash"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "☁️",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "못 봤다 쳐줌.",
+          "선 넘네."
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_butt_calm_3",
+      "trigger": {
+        "input": "tap",
+        "part": "butt",
+        "state": "calm"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "squash",
+          "dur": 450,
+          "action": "squash"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "☁️",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "어이.",
+          "장난 크다?"
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_head_annoyed_1",
+      "trigger": {
+        "input": "tap",
+        "part": "head",
         "state": "annoyed"
       },
       "weight": 1,
@@ -53,39 +436,422 @@
         {
           "target": "body",
           "type": "squash",
-          "dur": 450
+          "dur": 450,
+          "action": "squash"
         },
         {
           "target": "stage",
           "type": "fluff",
-          "count": 3
+          "count": 3,
+          "types": [
+            "☁️",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
         }
       ],
       "line": {
         "pool": [
           "아 좀!",
-          "그만 눌러",
-          "야!!"
+          "정수리 금지."
         ],
-        "show_ms": 600
+        "show_ms": 650
       },
-      "gauge": 8,
-      "sounds": [
+      "gauge": 6
+    },
+    {
+      "id": "tap_head_annoyed_2",
+      "trigger": {
+        "input": "tap",
+        "part": "head",
+        "state": "annoyed"
+      },
+      "weight": 1,
+      "anim": [
         {
-          "fn": "boing",
-          "pitch": 1.0
+          "target": "body",
+          "type": "squash",
+          "dur": 450,
+          "action": "squash"
         },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "☁️",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
+      },
+      "sounds": [
         {
           "fn": "kyu",
           "pitch": 1.0
         }
-      ]
+      ],
+      "line": {
+        "pool": [
+          "적당히 해라",
+          "손 내려."
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
     },
     {
-      "id": "tap_angry_default",
+      "id": "tap_head_annoyed_3",
       "trigger": {
         "input": "tap",
-        "part": "*",
+        "part": "head",
+        "state": "annoyed"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "squash",
+          "dur": 450,
+          "action": "squash"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "☁️",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "마 고마해라",
+          "참는 중이다."
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_belly_annoyed_1",
+      "trigger": {
+        "input": "tap",
+        "part": "belly",
+        "state": "annoyed"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "squash",
+          "dur": 450,
+          "action": "squash"
+        },
+        {
+          "target": "belly",
+          "type": "jiggle",
+          "dur": 600,
+          "action": "jiggle"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "☁️",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "배 누르지 마",
+          "아 좀!"
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_belly_annoyed_2",
+      "trigger": {
+        "input": "tap",
+        "part": "belly",
+        "state": "annoyed"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "squash",
+          "dur": 450,
+          "action": "squash"
+        },
+        {
+          "target": "belly",
+          "type": "jiggle",
+          "dur": 600,
+          "action": "jiggle"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "☁️",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "진짜 한다?",
+          "간지럽다."
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_belly_annoyed_3",
+      "trigger": {
+        "input": "tap",
+        "part": "belly",
+        "state": "annoyed"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "squash",
+          "dur": 450,
+          "action": "squash"
+        },
+        {
+          "target": "belly",
+          "type": "jiggle",
+          "dur": 600,
+          "action": "jiggle"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "☁️",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "적당히 찔러라",
+          "너 기억했다."
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_butt_annoyed_1",
+      "trigger": {
+        "input": "tap",
+        "part": "butt",
+        "state": "annoyed"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "squash",
+          "dur": 450,
+          "action": "squash"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "☁️",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "야 거기!",
+          "못 참는다?"
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_butt_annoyed_2",
+      "trigger": {
+        "input": "tap",
+        "part": "butt",
+        "state": "annoyed"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "squash",
+          "dur": 450,
+          "action": "squash"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "☁️",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "뒤에서 치냐",
+          "비겁하다."
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_butt_annoyed_3",
+      "trigger": {
+        "input": "tap",
+        "part": "butt",
+        "state": "annoyed"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "squash",
+          "dur": 450,
+          "action": "squash"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "☁️",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "아니 진짜",
+          "그만해라."
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_head_angry_1",
+      "trigger": {
+        "input": "tap",
+        "part": "head",
         "state": "angry"
       },
       "weight": 1,
@@ -93,33 +859,425 @@
         {
           "target": "body",
           "type": "jump",
-          "dur": 550
+          "dur": 550,
+          "action": "jump"
         },
         {
           "target": "stage",
           "type": "fluff",
-          "count": 3
+          "count": 3,
+          "types": [
+            "💥",
+            "⭐",
+            "✨"
+          ],
+          "action": "fluff"
         }
       ],
-      "line": {
-        "pool": [
-          "터진다 진짜!!",
-          "으아아!!",
-          "💢💢"
-        ],
-        "show_ms": 600
+      "sound": {
+        "fn": "grumble",
+        "pitch": 1.0
       },
-      "gauge": 8,
       "sounds": [
-        {
-          "fn": "grumble",
-          "pitch": 1.0
-        },
         {
           "fn": "kyu",
           "pitch": 1.0
         }
-      ]
+      ],
+      "line": {
+        "pool": [
+          "작작 찔러라",
+          "정수리 터진다"
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_head_angry_2",
+      "trigger": {
+        "input": "tap",
+        "part": "head",
+        "state": "angry"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "jump",
+          "dur": 550,
+          "action": "jump"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "💥",
+            "⭐",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "grumble",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "주먹 나간다?",
+          "너 딱 기다려"
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_head_angry_3",
+      "trigger": {
+        "input": "tap",
+        "part": "head",
+        "state": "angry"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "jump",
+          "dur": 550,
+          "action": "jump"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "💥",
+            "⭐",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "grumble",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "머리 금지다",
+          "봐준 줄 알아"
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_belly_angry_1",
+      "trigger": {
+        "input": "tap",
+        "part": "belly",
+        "state": "angry"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "jump",
+          "dur": 550,
+          "action": "jump"
+        },
+        {
+          "target": "belly",
+          "type": "jiggle",
+          "dur": 600,
+          "action": "jiggle"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "💥",
+            "⭐",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "grumble",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "터진다 진짜",
+          "배 아니다!"
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_belly_angry_2",
+      "trigger": {
+        "input": "tap",
+        "part": "belly",
+        "state": "angry"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "jump",
+          "dur": 550,
+          "action": "jump"
+        },
+        {
+          "target": "belly",
+          "type": "jiggle",
+          "dur": 600,
+          "action": "jiggle"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "💥",
+            "⭐",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "grumble",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "그만해라!!",
+          "나 폭발한다"
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_belly_angry_3",
+      "trigger": {
+        "input": "tap",
+        "part": "belly",
+        "state": "angry"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "jump",
+          "dur": 550,
+          "action": "jump"
+        },
+        {
+          "target": "belly",
+          "type": "jiggle",
+          "dur": 600,
+          "action": "jiggle"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "💥",
+            "⭐",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "grumble",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "주먹 장전함",
+          "후회한다?"
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_butt_angry_1",
+      "trigger": {
+        "input": "tap",
+        "part": "butt",
+        "state": "angry"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "jump",
+          "dur": 550,
+          "action": "jump"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "💥",
+            "⭐",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "grumble",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "진짜 선 넘음",
+          "뒤끝 간다"
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_butt_angry_2",
+      "trigger": {
+        "input": "tap",
+        "part": "butt",
+        "state": "angry"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "jump",
+          "dur": 550,
+          "action": "jump"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "💥",
+            "⭐",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "grumble",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "거기 금지!!",
+          "참는 거 끝"
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
+    },
+    {
+      "id": "tap_butt_angry_3",
+      "trigger": {
+        "input": "tap",
+        "part": "butt",
+        "state": "angry"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "jump",
+          "dur": 550,
+          "action": "jump"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 3,
+          "types": [
+            "💥",
+            "⭐",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "grumble",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "너 기억했다",
+          "이번엔 안 봐줘"
+        ],
+        "show_ms": 650
+      },
+      "gauge": 6
     },
     {
       "id": "tap_any_sulking",
@@ -133,7 +1291,8 @@
         {
           "target": "body",
           "type": "shake",
-          "dur": 400
+          "dur": 400,
+          "action": "shake"
         }
       ],
       "sound": {
@@ -149,9 +1308,9 @@
       "gauge": 0
     },
     {
-      "id": "pinch_start_default",
+      "id": "press_start_default",
       "trigger": {
-        "input": "pinch_start",
+        "input": "press_start",
         "state": "*"
       },
       "weight": 1,
@@ -162,16 +1321,17 @@
       },
       "line": {
         "pool": [
-          "아아아 늘어난다고!!"
+          "으아악!! 눌린다",
+          "찌그러진다고!!"
         ],
         "show_ms": 900
       },
       "gauge": 0
     },
     {
-      "id": "pinch_end_default",
+      "id": "press_end_default",
       "trigger": {
-        "input": "pinch_end",
+        "input": "press_end",
         "state": "*"
       },
       "weight": 1,
@@ -179,7 +1339,8 @@
         {
           "target": "body",
           "type": "wobble",
-          "dur": 1500
+          "dur": 1500,
+          "action": "wobble"
         }
       ],
       "sound": {
@@ -190,8 +1351,8 @@
         "pool": [],
         "show_ms": 750
       },
-      "gauge": 14,
-      "vibrate": 30
+      "gauge": 16,
+      "vibrate": 40
     },
     {
       "id": "tickle_hold_default",
@@ -204,7 +1365,8 @@
         {
           "target": "body",
           "type": "tremble",
-          "dur": 120
+          "dur": 120,
+          "action": "tremble"
         }
       ],
       "sound": {
@@ -213,7 +1375,8 @@
       },
       "line": {
         "pool": [
-          "...읏... 하나도 안 간지러운데..."
+          "풉... 안 간지러",
+          "하나도 안 웃김"
         ],
         "show_ms": 900
       },
@@ -229,17 +1392,25 @@
       "anim": [
         {
           "target": "body",
-          "type": "stop_tremble"
+          "type": "stop_tremble",
+          "action": "stop_tremble"
         },
         {
           "target": "body",
           "type": "wobble",
-          "dur": 1500
+          "dur": 1500,
+          "action": "wobble"
         },
         {
           "target": "stage",
           "type": "fluff",
-          "count": 6
+          "count": 6,
+          "types": [
+            "😂",
+            "✨",
+            "☁️"
+          ],
+          "action": "fluff"
         }
       ],
       "sound": {
@@ -248,11 +1419,12 @@
       },
       "line": {
         "pool": [
-          "꺄하하하핰!! 그만!! 핰!!"
+          "아 그만!!",
+          "배 찢어짐!!"
         ],
         "show_ms": 1300
       },
-      "gauge": 5,
+      "gauge": 4,
       "vibrate": [
         20,
         40,
@@ -260,6 +1432,44 @@
         40,
         20
       ]
+    },
+    {
+      "id": "pet_calm_default",
+      "trigger": {
+        "input": "pet",
+        "state": "calm"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 1,
+          "types": [
+            "❤️",
+            "✨"
+          ],
+          "action": "fluff"
+        },
+        {
+          "target": "blush",
+          "type": "blush",
+          "opacity": 1,
+          "action": "blush"
+        }
+      ],
+      "sound": {
+        "fn": "purr",
+        "pitch": 1.0
+      },
+      "line": {
+        "pool": [
+          "기분 좋다...",
+          "손 떼지 마라"
+        ],
+        "show_ms": 900
+      },
+      "gauge_delta": -9
     },
     {
       "id": "push_default",
@@ -275,9 +1485,10 @@
       },
       "line": {
         "pool": [
-          "우와아악?!"
+          "으와아아앙?!",
+          "나 넘어진다?!"
         ],
-        "show_ms": 800
+        "show_ms": 900
       },
       "gauge": 0
     },
@@ -295,17 +1506,17 @@
       },
       "line": {
         "pool": [
-          "읏차...",
-          "으랏차...",
-          "안 일어나져!!",
-          "...도와줄 거임 말 거임?"
+          "일으켜 줘어",
+          "나 안 일어난다",
+          "손가락 대라",
+          "일부러 누움"
         ],
-        "show_ms": 700
+        "show_ms": 800
       },
       "gauge": 0
     },
     {
-      "id": "fallen_helped_default",
+      "id": "help_fallen_default",
       "trigger": {
         "input": "help",
         "state": "fallen"
@@ -318,27 +1529,33 @@
       },
       "line": {
         "pool": [
-          "...누가 도와달랬냐. ...고맙고."
+          "감동 아님.",
+          "다음엔 밀지 마라"
         ],
-        "show_ms": 1500
+        "show_ms": 1300
       },
-      "gauge_delta": -10
+      "gauge_delta": -15
     },
     {
-      "id": "fallen_ignored_default",
+      "id": "ignored_fallen_default",
       "trigger": {
         "input": "ignored",
         "state": "fallen"
       },
       "weight": 1,
       "anim": [],
+      "sound": {
+        "fn": "boing",
+        "pitch": 1.0
+      },
       "line": {
         "pool": [
-          "퉤. 일부러 누워있던 거임."
+          "바닥 시원하네",
+          "혼자 일어났다"
         ],
-        "show_ms": 1400
+        "show_ms": 1300
       },
-      "gauge": 18
+      "gauge": 20
     },
     {
       "id": "enter_angry_default",
@@ -347,12 +1564,23 @@
         "state": "angry"
       },
       "weight": 1,
-      "anim": [],
+      "anim": [
+        {
+          "target": "body",
+          "type": "jump",
+          "action": "jump"
+        }
+      ],
+      "sound": {
+        "fn": "angryHit",
+        "pitch": 1.0
+      },
       "line": {
         "pool": [
-          "어쩔래."
+          "작작 찔러라",
+          "슬슬 열받는다"
         ],
-        "show_ms": 900
+        "show_ms": 1000
       },
       "gauge": 0
     },
@@ -366,7 +1594,8 @@
       "anim": [
         {
           "target": "body",
-          "type": "turn_away"
+          "type": "turn_away",
+          "action": "turn_away"
         }
       ],
       "sound": {
@@ -375,9 +1604,10 @@
       },
       "line": {
         "pool": [
-          "흥."
+          "흥! 절교다.",
+          "말 안 한다."
         ],
-        "show_ms": 900
+        "show_ms": 1000
       },
       "gauge": 0
     },
@@ -392,7 +1622,8 @@
         {
           "target": "body",
           "type": "wobble",
-          "dur": 1500
+          "dur": 1500,
+          "action": "wobble"
         }
       ],
       "sound": {
@@ -401,9 +1632,101 @@
       },
       "line": {
         "pool": [
-          "...다신 그러지 마💢"
+          "딱히 용서 아님",
+          "이번만 봐준다"
         ],
-        "show_ms": 1300
+        "show_ms": 1400
+      },
+      "gauge": 0
+    },
+    {
+      "id": "combo_default",
+      "trigger": {
+        "input": "combo",
+        "state": "*"
+      },
+      "weight": 1,
+      "anim": [
+        {
+          "target": "body",
+          "type": "jump",
+          "action": "jump"
+        },
+        {
+          "target": "body",
+          "type": "tremble",
+          "action": "tremble"
+        },
+        {
+          "target": "stage",
+          "type": "fluff",
+          "count": 8,
+          "types": [
+            "💥",
+            "⭐",
+            "✨"
+          ],
+          "action": "fluff"
+        }
+      ],
+      "sound": {
+        "fn": "grumble",
+        "pitch": 1.0
+      },
+      "sounds": [
+        {
+          "fn": "kyu",
+          "pitch": 1.0
+        }
+      ],
+      "line": {
+        "pool": [
+          "연타 그만해!!",
+          "콤보 금지다!!"
+        ],
+        "show_ms": 700
+      },
+      "gauge": 0
+    },
+    {
+      "id": "hair_detach_default",
+      "trigger": {
+        "input": "hair_detach",
+        "state": "*"
+      },
+      "weight": 1,
+      "anim": [],
+      "sound": {
+        "fn": "hairPop",
+        "pitch": 1.0
+      },
+      "line": {
+        "pool": [
+          "앗 내 털!!",
+          "주워줘 빨리!!"
+        ],
+        "show_ms": 1100
+      },
+      "gauge": 0
+    },
+    {
+      "id": "hair_attach_default",
+      "trigger": {
+        "input": "hair_attach",
+        "state": "*"
+      },
+      "weight": 1,
+      "anim": [],
+      "sound": {
+        "fn": "sparkle",
+        "pitch": 1.0
+      },
+      "line": {
+        "pool": [
+          "휴 다행이다",
+          "다신 뽑지 마"
+        ],
+        "show_ms": 1100
       },
       "gauge": 0
     }
